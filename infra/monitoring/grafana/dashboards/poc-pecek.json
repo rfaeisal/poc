@@ -1,0 +1,87 @@
+{
+  "dashboard": {
+    "title": "POC-Pecek Overview",
+    "uid": "poc-pecek-main",
+    "timezone": "Asia/Jakarta",
+    "panels": [
+      {
+        "title": "LiveKit Active Rooms",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "livekit_room_count",
+            "legendFormat": "Rooms"
+          }
+        ]
+      },
+      {
+        "title": "LiveKit Active Participants",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+        "targets": [
+          {
+            "expr": "livekit_participant_count",
+            "legendFormat": "Participants"
+          }
+        ]
+      },
+      {
+        "title": "LiveKit Track Published",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+        "targets": [
+          {
+            "expr": "livekit_track_publish_count",
+            "legendFormat": "Tracks"
+          }
+        ]
+      },
+      {
+        "title": "PostgreSQL Connections",
+        "type": "gauge",
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+        "targets": [
+          {
+            "expr": "pg_stat_activity_count",
+            "legendFormat": "Connections"
+          }
+        ]
+      },
+      {
+        "title": "Redis Memory Usage",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes",
+            "legendFormat": "Used Memory"
+          }
+        ]
+      },
+      {
+        "title": "LiveKit Bandwidth",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+        "targets": [
+          {
+            "expr": "rate(livekit_node_bytes_in_total[5m])",
+            "legendFormat": "Bytes In"
+          },
+          {
+            "expr": "rate(livekit_node_bytes_out_total[5m])",
+            "legendFormat": "Bytes Out"
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s"
+  }
+}

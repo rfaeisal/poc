@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// ORGANIZATIONS — Enterprise multi-tenant
+// ─────────────────────────────────────────
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  logoUrl     String?
+  plan        OrgPlan  @default(FREE)
+  maxUsers    Int      @default(100)
+  maxChannels Int      @default(10)
+  settings    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users    OrganizationMember[]
+  channels Channel[]
+  apiKeys  ApiKey[]
+}
+
+enum OrgPlan {
+  FREE
+  COMMUNITY
+  ENTERPRISE
+}
+
+// ─────────────────────────────────────────
+// USERS
+// ─────────────────────────────────────────
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  role         UserRole  @default(USER)
+  isActive     Boolean   @default(true)
+  isBanned     Boolean   @default(false)
+  bannedReason String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastSeenAt   DateTime?
+
+  profile        UserProfile?
+  organizations  OrganizationMember[]
+  channelMembers ChannelMember[]
+  devices        Device[]
+  pttLogs        PttLog[]
+  refreshTokens  RefreshToken[]
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+model UserProfile {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  callsign  String  @unique
+  name      String
+  photoUrl  String?
+  bio       String?
+  latitude  Float?
+  longitude Float?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────
+// CHANNELS (=Rooms di LiveKit)
+// ─────────────────────────────────────────
+model Channel {
+  id            String   @id @default(uuid())
+  livekitRoomId String   @unique
+  name          String
+  description   String?
+  isPrivate     Boolean  @default(false)
+  password      String?
+  maxMembers    Int      @default(500)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdById    String
+
+  members  ChannelMember[]
+  pttLogs  PttLog[]
+}
+
+model ChannelMember {
+  id        String            @id @default(uuid())
+  channelId String
+  userId    String
+  role      ChannelMemberRole @default(MEMBER)
+  joinedAt  DateTime          @default(now())
+  isMuted   Boolean           @default(false)
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+}
+
+enum ChannelMemberRole {
+  MEMBER
+  MODERATOR
+  ADMIN
+}
+
+// ─────────────────────────────────────────
+// PTT LOGS — Audit trail untuk enterprise
+// ─────────────────────────────────────────
+model PttLog {
+  id         String    @id @default(uuid())
+  channelId  String
+  userId     String
+  startedAt  DateTime
+  endedAt    DateTime?
+  durationMs Int?
+  audioUrl   String?
+
+  channel Channel @relation(fields: [channelId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([channelId, startedAt])
+  @@index([userId, startedAt])
+}
+
+// ─────────────────────────────────────────
+// DEVICES — Untuk push notification & audit
+// ─────────────────────────────────────────
+model Device {
+  id         String         @id @default(uuid())
+  userId     String
+  deviceId   String
+  fcmToken   String?
+  platform   DevicePlatform
+  appVersion String
+  lastSeenAt DateTime       @default(now())
+  createdAt  DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceId])
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  DESKTOP
+}
+
+// ─────────────────────────────────────────
+// REFRESH TOKENS
+// ─────────────────────────────────────────
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+}
+
+// ─────────────────────────────────────────
+// API KEYS — Untuk integrasi enterprise
+// ─────────────────────────────────────────
+model ApiKey {
+  id             String    @id @default(uuid())
+  organizationId String
+  name           String
+  keyHash        String    @unique
+  permissions    String[]
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  revokedAt      DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+// ─────────────────────────────────────────
+// ORGANIZATION MEMBERS
+// ─────────────────────────────────────────
+model OrganizationMember {
+  id             String        @id @default(uuid())
+  organizationId String
+  userId         String
+  role           OrgMemberRole @default(MEMBER)
+  joinedAt       DateTime      @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@unique([organizationId, userId])
+}
+
+enum OrgMemberRole {
+  MEMBER
+  MANAGER
+  OWNER
+}

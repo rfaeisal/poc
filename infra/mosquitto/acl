@@ -1,0 +1,13 @@
+# Format: user <username>
+# topic read/write/readwrite <topic pattern>
+
+# Backend API — bisa publish ke semua topic
+user backend
+topic readwrite #
+
+# Pattern untuk user biasa:
+# User hanya bisa publish ke topic presence milik sendiri
+# dan subscribe ke channel yang mereka join
+# (ACL dinamis dihandle di backend dengan token)
+
+# Default: tidak ada akses
