@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/talk_timer.dart';
 import '../providers/ptt_provider.dart';
 
 class PttIndicator extends ConsumerWidget {
@@ -63,6 +64,8 @@ class PttIndicator extends ConsumerWidget {
                     : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
+        const SizedBox(height: 4),
+        TalkTimer(isActive: isActive),
         if (ptt.connectionStatus != ConnectionStatus.connected) ...[
           const SizedBox(height: 4),
           _ConnectionBadge(status: ptt.connectionStatus),

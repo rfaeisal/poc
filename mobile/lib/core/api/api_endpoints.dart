@@ -19,4 +19,7 @@ class ApiEndpoints {
   static String deviceById(String id) => '/users/devices/$id';
 
   static const String health = '/health';
+
+  static const String echoStart = '/echo/start';
+  static const String echoStop = '/echo/stop';
 }

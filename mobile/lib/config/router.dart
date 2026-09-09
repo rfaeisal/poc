@@ -9,6 +9,7 @@ import '../features/channels/screens/channel_list_screen.dart';
 import '../features/map/screens/map_screen.dart';
 import '../features/settings/screens/audio_settings_screen.dart';
 import '../features/settings/screens/bluetooth_settings_screen.dart';
+import '../features/echo_test/screens/echo_test_screen.dart';
 import '../features/settings/screens/device_info_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
@@ -64,6 +65,10 @@ final router = GoRouter(
     GoRoute(
       path: '/settings/device',
       builder: (context, state) => const DeviceInfoScreen(),
+    ),
+    GoRoute(
+      path: '/settings/echo-test',
+      builder: (context, state) => const EchoTestScreen(),
     ),
   ],
 );

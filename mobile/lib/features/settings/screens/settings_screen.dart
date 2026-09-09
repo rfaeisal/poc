@@ -104,6 +104,13 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.surround_sound),
+            title: const Text('Echo Test'),
+            subtitle: const Text('Test mic/speaker & ukur delay'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/echo-test'),
+          ),
+          ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('Device Info'),
             subtitle: const Text('Diagnostics & debug info'),
