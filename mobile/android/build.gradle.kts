@@ -19,6 +19,9 @@ subprojects {
                         }
                     }
                 }
+                if (android.compileSdk != null && android.compileSdk!! < 34) {
+                    android.compileSdk = 34
+                }
             }
         }
     }
