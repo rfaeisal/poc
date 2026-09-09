@@ -7,9 +7,7 @@ import { publishPttEvent, publishMemberEvent, publishChannelStatus } from '../..
 export default async function livekitWebhookRoute(fastify: FastifyInstance) {
   const receiver = new WebhookReceiver(config.LIVEKIT_API_KEY, config.LIVEKIT_API_SECRET);
 
-  fastify.post('/webhook/livekit', {
-    config: { rawBody: true },
-  }, async (request: any, reply) => {
+  fastify.post('/webhook/livekit', async (request, reply) => {
     const authHeader = request.headers.authorization;
     if (!authHeader) {
       reply.code(401).send({ error: 'Missing authorization' });
@@ -18,7 +16,7 @@ export default async function livekitWebhookRoute(fastify: FastifyInstance) {
 
     let event;
     try {
-      const body = request.rawBody ?? (typeof request.body === 'string' ? request.body : JSON.stringify(request.body));
+      const body = typeof request.body === 'string' ? request.body : JSON.stringify(request.body);
       event = await receiver.receive(body, authHeader);
     } catch {
       reply.code(401).send({ error: 'Invalid webhook signature' });
