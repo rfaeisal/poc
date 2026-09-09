@@ -69,12 +69,17 @@ source .env
 rm -f mosquitto/passwd
 docker run --rm -v "$(pwd)/mosquitto:/mosquitto/config" eclipse-mosquitto:2 \
     mosquitto_passwd -c -b /mosquitto/config/passwd "$MQTT_BACKEND_USER" "$MQTT_BACKEND_PASSWORD"
+chmod 644 mosquitto/passwd
 
 # ─────────────────────────────────────────
-# Set LiveKit external IP
+# Set LiveKit external IP in .env
 # ─────────────────────────────────────────
 PUBLIC_IP=$(curl -s ifconfig.me)
-sed -i "s/# external_ip: .*/external_ip: \"$PUBLIC_IP\"/" livekit/livekit.yaml
+if ! grep -q "^PUBLIC_IP=" .env; then
+    echo "PUBLIC_IP=$PUBLIC_IP" >> .env
+else
+    sed -i "s|^PUBLIC_IP=.*|PUBLIC_IP=$PUBLIC_IP|" .env
+fi
 
 # ─────────────────────────────────────────
 # Check DATABASE_URL

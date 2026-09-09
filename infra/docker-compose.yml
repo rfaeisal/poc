@@ -67,7 +67,7 @@ services:
   # LiveKit — WebRTC SFU (core PTT engine)
   # ─────────────────────────────────────────
   livekit:
-    image: livekit/livekit-server:latest
+    image: livekit/livekit-server:v1.8.2
     container_name: poc-livekit
     restart: unless-stopped
     networks: [poc-pecek-net]
@@ -76,6 +76,7 @@ services:
       --keys "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
       --redis-host redis:6379
       --redis-password ${REDIS_PASSWORD}
+      --node-ip ${PUBLIC_IP:-0.0.0.0}
       --dev
     volumes:
       - ./livekit/livekit.yaml:/etc/livekit.yaml:ro

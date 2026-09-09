@@ -4,8 +4,6 @@ rtc:
   port_range_start: 50000
   port_range_end: 50100
   use_external_ip: true
-  # Masukkan IP publik server untuk production
-  # external_ip: "1.2.3.4"
 
 turn:
   enabled: false
