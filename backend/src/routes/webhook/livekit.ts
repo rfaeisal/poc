@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { WebhookReceiver } from 'livekit-server-sdk';
+import { WebhookReceiver, TrackType } from 'livekit-server-sdk';
 import { config } from '../../config';
 import { prisma } from '../../lib/prisma';
 import { publishPttEvent, publishMemberEvent, publishChannelStatus } from '../../services/mqtt.service';
@@ -9,7 +9,7 @@ export default async function livekitWebhookRoute(fastify: FastifyInstance) {
 
   fastify.post('/webhook/livekit', {
     config: { rawBody: true },
-  }, async (request, reply) => {
+  }, async (request: any, reply) => {
     const authHeader = request.headers.authorization;
     if (!authHeader) {
       reply.code(401).send({ error: 'Missing authorization' });
@@ -18,7 +18,7 @@ export default async function livekitWebhookRoute(fastify: FastifyInstance) {
 
     let event;
     try {
-      const body = typeof request.body === 'string' ? request.body : JSON.stringify(request.body);
+      const body = request.rawBody ?? (typeof request.body === 'string' ? request.body : JSON.stringify(request.body));
       event = await receiver.receive(body, authHeader);
     } catch {
       reply.code(401).send({ error: 'Invalid webhook signature' });
@@ -63,7 +63,7 @@ export default async function livekitWebhookRoute(fastify: FastifyInstance) {
         break;
 
       case 'track_published':
-        if (channel && event.participant && event.track?.type === 'AUDIO') {
+        if (channel && event.participant && event.track?.type === TrackType.AUDIO) {
           const profile = await prisma.userProfile.findFirst({
             where: { userId: event.participant.identity },
           });
@@ -83,7 +83,7 @@ export default async function livekitWebhookRoute(fastify: FastifyInstance) {
         break;
 
       case 'track_unpublished':
-        if (channel && event.participant && event.track?.type === 'AUDIO') {
+        if (channel && event.participant && event.track?.type === TrackType.AUDIO) {
           const profile = await prisma.userProfile.findFirst({
             where: { userId: event.participant.identity },
           });

@@ -15,6 +15,10 @@ room:
   empty_timeout: 300
   departure_timeout: 20
 
+webhook:
+  urls:
+    - http://backend:3000/webhook/livekit
+
 logging:
   level: info
   json: true

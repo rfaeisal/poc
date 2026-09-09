@@ -22,6 +22,17 @@ export async function createChannel(body: {
   return data;
 }
 
+export async function updateChannel(id: string, body: {
+  name?: string;
+  description?: string;
+  maxMembers?: number;
+  isActive?: boolean;
+  isPrivate?: boolean;
+}): Promise<{ channel: Channel }> {
+  const { data } = await api.patch(`/admin/channels/${id}`, body);
+  return data;
+}
+
 export async function deleteChannel(id: string): Promise<void> {
   await api.delete(`/admin/channels/${id}`);
 }

@@ -4,6 +4,7 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { UsersPage } from '@/pages/users/UsersPage';
 import { UserDetailPage } from '@/pages/users/UserDetailPage';
+import { CreateUserPage } from '@/pages/users/CreateUserPage';
 import { ChannelsPage } from '@/pages/channels/ChannelsPage';
 import { ChannelDetailPage } from '@/pages/channels/ChannelDetailPage';
 import { CreateChannelPage } from '@/pages/channels/CreateChannelPage';
@@ -20,6 +21,7 @@ export function AppRouter() {
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/users/create" element={<CreateUserPage />} />
         <Route path="/users/:id" element={<UserDetailPage />} />
         <Route path="/channels" element={<ChannelsPage />} />
         <Route path="/channels/create" element={<CreateChannelPage />} />

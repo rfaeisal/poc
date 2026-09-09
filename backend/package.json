@@ -25,6 +25,7 @@
     "dotenv": "^17.4.2",
     "fastify": "^4.28.1",
     "fastify-plugin": "^4.5.1",
+    "fastify-raw-body": "^6.0.1",
     "ioredis": "^5.4.1",
     "livekit-server-sdk": "^2.9.1",
     "mqtt": "^5.10.1",

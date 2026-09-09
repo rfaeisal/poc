@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
-import { getUsers, banUser, unbanUser } from '@/api/users';
+import { Pencil, ShieldOff, ShieldCheck, Trash2 } from 'lucide-react';
+import { getUsers, banUser, unbanUser, deleteUser } from '@/api/users';
 import { User } from '@/types/user';
 import { DataTable } from '@/components/common/DataTable';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -17,13 +19,24 @@ export function UsersPage() {
     queryFn: () => getUsers({ page, limit: 20, q: search || undefined }),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: deleteUser,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+  });
+
   const users = data?.users ?? [];
   const pagination = data?.pagination;
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin-users'] });
 
   const columns: ColumnDef<User, unknown>[] = [
     {
       header: 'Callsign',
       accessorFn: (row) => row.profile?.callsign ?? '-',
+      cell: ({ row }) => (
+        <Link to={`/users/${row.original.id}`} className="font-medium text-blue-600 hover:underline">
+          {row.original.profile?.callsign ?? '-'}
+        </Link>
+      ),
     },
     {
       header: 'Name',
@@ -59,44 +72,85 @@ export function UsersPage() {
       ),
     },
     {
-      header: 'Last Seen',
-      accessorKey: 'lastSeenAt',
+      header: 'Created',
+      accessorKey: 'createdAt',
       cell: ({ getValue }) => {
         const v = getValue() as string | null;
-        return v ? format(new Date(v), 'dd MMM yyyy HH:mm') : '-';
+        return v ? format(new Date(v), 'dd MMM yyyy') : '-';
       },
     },
     {
       header: 'Actions',
       cell: ({ row }) => {
         const user = row.original;
-        if (user.role === 'ADMIN') return null;
 
-        const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-
-        return user.isBanned ? (
-          <ConfirmDialog
-            title="Unban User"
-            message={`Unban ${user.profile?.callsign ?? user.email}?`}
-            confirmLabel="Unban"
-            onConfirm={async () => { await unbanUser(user.id); refresh(); }}
-          >
-            {(open) => (
-              <button onClick={open} className="text-sm text-blue-600 hover:underline">Unban</button>
+        return (
+          <div className="flex items-center gap-1">
+            <Link
+              to={`/users/${user.id}`}
+              title="Edit user"
+              className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600"
+            >
+              <Pencil size={16} />
+            </Link>
+            {user.role !== 'ADMIN' && (
+              <>
+                {user.isBanned ? (
+                  <ConfirmDialog
+                    title="Unban User"
+                    message={`Unban ${user.profile?.callsign ?? user.email}?`}
+                    confirmLabel="Unban"
+                    onConfirm={async () => { await unbanUser(user.id); refresh(); }}
+                  >
+                    {(open) => (
+                      <button
+                        onClick={open}
+                        title="Unban user"
+                        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-green-50 hover:text-green-600"
+                      >
+                        <ShieldCheck size={16} />
+                      </button>
+                    )}
+                  </ConfirmDialog>
+                ) : (
+                  <ConfirmDialog
+                    title="Ban User"
+                    message={`Ban ${user.profile?.callsign ?? user.email}? They will be immediately disconnected.`}
+                    confirmLabel="Ban"
+                    variant="danger"
+                    onConfirm={async () => { await banUser(user.id, 'Banned by admin'); refresh(); }}
+                  >
+                    {(open) => (
+                      <button
+                        onClick={open}
+                        title="Ban user"
+                        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-orange-50 hover:text-orange-600"
+                      >
+                        <ShieldOff size={16} />
+                      </button>
+                    )}
+                  </ConfirmDialog>
+                )}
+                <ConfirmDialog
+                  title="Delete User"
+                  message={`Permanently delete ${user.profile?.callsign ?? user.email}? This cannot be undone.`}
+                  confirmLabel="Delete"
+                  variant="danger"
+                  onConfirm={() => deleteMutation.mutateAsync(user.id)}
+                >
+                  {(open) => (
+                    <button
+                      onClick={open}
+                      title="Delete user"
+                      className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </ConfirmDialog>
+              </>
             )}
-          </ConfirmDialog>
-        ) : (
-          <ConfirmDialog
-            title="Ban User"
-            message={`Ban ${user.profile?.callsign ?? user.email}? They will be immediately disconnected.`}
-            confirmLabel="Ban"
-            variant="danger"
-            onConfirm={async () => { await banUser(user.id, 'Banned by admin'); refresh(); }}
-          >
-            {(open) => (
-              <button onClick={open} className="text-sm text-red-600 hover:underline">Ban</button>
-            )}
-          </ConfirmDialog>
+          </div>
         );
       },
     },
@@ -106,13 +160,21 @@ export function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-        <input
-          type="text"
-          placeholder="Search callsign, name, email..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="w-72 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            placeholder="Search callsign, name, email..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="w-72 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <Link
+            to="/users/create"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            + Create User
+          </Link>
+        </div>
       </div>
 
       {isLoading ? (

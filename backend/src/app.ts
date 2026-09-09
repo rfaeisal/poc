@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import helmet from '@fastify/helmet';
+import rawBody from 'fastify-raw-body';
 import prismaPlugin from './plugins/prisma';
 import redisPlugin from './plugins/redis';
 import authPlugin from './plugins/auth';
@@ -22,6 +23,9 @@ export function buildApp() {
 
   // Security headers
   app.register(helmet);
+
+  // Raw body support for webhook signature verification
+  app.register(rawBody, { field: 'rawBody', global: false, runFirst: true });
 
   // Plugins
   app.register(corsPlugin);

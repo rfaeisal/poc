@@ -1,0 +1,12 @@
+# Release signing configuration for POC-Pecek
+# Copy this file to key.properties and fill in your values.
+#
+# Generate a keystore:
+#   keytool -genkey -v -keystore android/app/upload-keystore.jks \
+#     -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 \
+#     -alias upload
+
+storePassword=<your-store-password>
+keyPassword=<your-key-password>
+keyAlias=upload
+storeFile=upload-keystore.jks

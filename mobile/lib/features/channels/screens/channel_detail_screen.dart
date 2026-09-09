@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../../core/services/battery_optimization_service.dart';
 import '../../../core/services/foreground_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../channels/models/channel.dart';
@@ -60,6 +62,8 @@ class _ChannelDetailScreenState extends ConsumerState<ChannelDetailScreen> {
 
     PttForegroundService.start(channelName);
 
+    _checkBatteryOptimization();
+
     // Start location sharing if enabled in settings
     final settings = ref.read(settingsProvider);
     if (settings.locationSharing) {
@@ -69,6 +73,43 @@ class _ChannelDetailScreenState extends ConsumerState<ChannelDetailScreen> {
             channelId: widget.channelId,
           );
     }
+  }
+
+  Future<void> _checkBatteryOptimization() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool('battery_opt_prompted') == true) return;
+
+    final isIgnoring =
+        await BatteryOptimizationService.isIgnoringBatteryOptimizations();
+    if (isIgnoring || !mounted) return;
+
+    await prefs.setBool('battery_opt_prompted', true);
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Battery Optimization'),
+        content: const Text(
+          'Untuk menjaga PTT tetap aktif di background, '
+          'nonaktifkan optimasi baterai untuk POC-Pecek.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Nanti'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              BatteryOptimizationService
+                  .requestIgnoreBatteryOptimizations();
+            },
+            child: const Text('Izinkan'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _leaveChannel() async {

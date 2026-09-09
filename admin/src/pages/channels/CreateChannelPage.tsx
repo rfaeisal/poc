@@ -5,97 +5,116 @@ import { createChannel } from '@/api/channels';
 
 export function CreateChannelPage() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [password, setPassword] = useState('');
-  const [maxMembers, setMaxMembers] = useState(500);
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    isPrivate: false,
+    password: '',
+    maxMembers: 500,
+  });
 
   const mutation = useMutation({
-    mutationFn: createChannel,
+    mutationFn: () => createChannel({
+      name: form.name,
+      description: form.description || undefined,
+      isPrivate: form.isPrivate,
+      password: form.isPrivate && form.password ? form.password : undefined,
+      maxMembers: form.maxMembers,
+    }),
     onSuccess: () => navigate('/channels'),
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    mutation.mutate({
-      name,
-      description: description || undefined,
-      isPrivate,
-      password: isPrivate && password ? password : undefined,
-      maxMembers,
-    });
-  };
+  const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [field]: e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.type === 'number' ? Number(e.target.value) : e.target.value }));
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Create Channel</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
+      <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }} className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Name</label>
           <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            type="text"
             required
             minLength={2}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            value={form.name}
+            onChange={set('name')}
+            placeholder="Channel Umum"
+            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Description</label>
           <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={form.description}
+            onChange={set('description')}
             rows={3}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            placeholder="Deskripsi channel..."
+            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Max Members</label>
           <input
             type="number"
-            value={maxMembers}
-            onChange={(e) => setMaxMembers(Number(e.target.value))}
+            value={form.maxMembers}
+            onChange={set('maxMembers')}
             min={2}
             max={500}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
-        <div className="flex items-center gap-2">
+
+        <label className="flex items-center gap-2">
           <input
             type="checkbox"
-            id="isPrivate"
-            checked={isPrivate}
-            onChange={(e) => setIsPrivate(e.target.checked)}
+            checked={form.isPrivate}
+            onChange={set('isPrivate')}
             className="h-4 w-4 rounded border-gray-300"
           />
-          <label htmlFor="isPrivate" className="text-sm text-gray-700">Private channel</label>
-        </div>
-        {isPrivate && (
+          <span className="text-sm text-gray-700">Private channel (requires password to join)</span>
+        </label>
+
+        {form.isPrivate && (
           <div>
             <label className="block text-sm font-medium text-gray-700">Channel Password</label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={form.password}
+              onChange={set('password')}
               minLength={4}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              placeholder="Min 4 characters"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
         )}
 
         {mutation.error && (
-          <p className="text-sm text-red-600">Failed to create channel</p>
+          <p className="text-sm text-red-600">
+            {(mutation.error as Error & { response?: { data?: { error?: string } } })?.response?.data?.error
+              ?? 'Failed to create channel'}
+          </p>
         )}
 
-        <button
-          type="submit"
-          disabled={mutation.isPending}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          {mutation.isPending ? 'Creating...' : 'Create Channel'}
-        </button>
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => navigate('/channels')}
+            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={mutation.isPending}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {mutation.isPending ? 'Creating...' : 'Create Channel'}
+          </button>
+        </div>
       </form>
     </div>
   );

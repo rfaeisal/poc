@@ -16,6 +16,7 @@ class ApiEndpoints {
   static const String searchUsers = '/users/search';
   static String userProfile(String id) => '/users/$id/profile';
   static const String devices = '/users/devices';
+  static String deviceById(String id) => '/users/devices/$id';
 
   static const String health = '/health';
 }

@@ -38,7 +38,7 @@ export async function createChannel(data: {
 }
 
 export async function listChannels(userId: string) {
-  return prisma.channel.findMany({
+  const channels = await prisma.channel.findMany({
     where: {
       isActive: true,
       OR: [
@@ -51,6 +51,7 @@ export async function listChannels(userId: string) {
     },
     orderBy: { createdAt: 'desc' },
   });
+  return channels.map(({ password, ...ch }) => ch);
 }
 
 export async function getChannel(channelId: string) {

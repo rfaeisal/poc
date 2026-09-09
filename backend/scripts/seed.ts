@@ -6,32 +6,36 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
-  // Create admin user
   const adminPassword = await bcrypt.hash('admin123', 12);
+  const testPassword = await bcrypt.hash('test1234', 12);
+
+  // Migrate old emails if they exist
+  await prisma.user.updateMany({ where: { email: 'admin@pocptx.local' }, data: { email: 'admin@pocpecek.local' } });
+  for (let i = 1; i <= 5; i++) {
+    await prisma.user.updateMany({ where: { email: `user${i}@pocptx.local` }, data: { email: `user${i}@pocpecek.local` } });
+  }
+
+  // Admin user
   const admin = await prisma.user.upsert({
     where: { email: 'admin@pocpecek.local' },
-    update: {},
+    update: { passwordHash: adminPassword, role: 'ADMIN' },
     create: {
       email: 'admin@pocpecek.local',
       passwordHash: adminPassword,
       role: 'ADMIN',
       profile: {
-        create: {
-          callsign: 'ADMIN01',
-          name: 'System Admin',
-        },
+        create: { callsign: 'ADMIN01', name: 'System Admin' },
       },
     },
   });
   console.log(`Admin user: ${admin.email}`);
 
-  // Create test users
-  const testPassword = await bcrypt.hash('test1234', 12);
+  // Test users
   const users = [];
   for (let i = 1; i <= 5; i++) {
     const user = await prisma.user.upsert({
       where: { email: `user${i}@pocpecek.local` },
-      update: {},
+      update: { passwordHash: testPassword },
       create: {
         email: `user${i}@pocpecek.local`,
         passwordHash: testPassword,
@@ -48,7 +52,7 @@ async function main() {
     console.log(`Test user: ${user.email}`);
   }
 
-  // Create public channel
+  // Public channel
   const channel = await prisma.channel.upsert({
     where: { livekitRoomId: 'ch-seed-public-01' },
     update: {},
@@ -69,7 +73,7 @@ async function main() {
   });
   console.log(`Channel: ${channel.name}`);
 
-  // Create private channel
+  // Private channel
   const privateChannel = await prisma.channel.upsert({
     where: { livekitRoomId: 'ch-seed-private-01' },
     update: {},
@@ -88,7 +92,7 @@ async function main() {
   });
   console.log(`Private channel: ${privateChannel.name}`);
 
-  // Create organization
+  // Organization
   const org = await prisma.organization.upsert({
     where: { slug: 'test-org' },
     update: {},

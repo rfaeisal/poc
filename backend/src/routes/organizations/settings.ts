@@ -36,9 +36,13 @@ export async function settingsRoute(fastify: FastifyInstance) {
     }
 
     const body = updateSettingsSchema.parse(request.body);
+    const { settings, ...rest } = body;
     const org = await prisma.organization.update({
       where: { id: request.params.id },
-      data: body,
+      data: {
+        ...rest,
+        ...(settings !== undefined ? { settings: settings as any } : {}),
+      },
     });
 
     return { organization: org };

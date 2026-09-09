@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/services/battery_optimization_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 
@@ -75,6 +76,39 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               );
             },
+          ),
+          FutureBuilder<bool>(
+            future:
+                BatteryOptimizationService.isIgnoringBatteryOptimizations(),
+            builder: (context, snapshot) {
+              final isUnrestricted = snapshot.data ?? false;
+              return ListTile(
+                leading: const Icon(Icons.battery_saver),
+                title: const Text('Battery Optimization'),
+                subtitle: Text(
+                  isUnrestricted ? 'Unrestricted' : 'Restricted — tap to fix',
+                ),
+                trailing: isUnrestricted
+                    ? const Icon(Icons.check_circle, color: Colors.green)
+                    : null,
+                onTap: isUnrestricted
+                    ? null
+                    : () async {
+                        await BatteryOptimizationService
+                            .requestIgnoreBatteryOptimizations();
+                        if (context.mounted) {
+                          (context as Element).markNeedsBuild();
+                        }
+                      },
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('Device Info'),
+            subtitle: const Text('Diagnostics & debug info'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/device'),
           ),
           const Divider(),
           ListTile(
