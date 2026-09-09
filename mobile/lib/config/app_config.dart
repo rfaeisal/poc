@@ -19,6 +19,14 @@ class AppConfig {
     defaultValue: 1883,
   );
 
+  /// WebSocket URL for MQTT (e.g. wss://host/mqtt). When set, overrides mqttHost/mqttPort.
+  static const String mqttWsUrl = String.fromEnvironment(
+    'MQTT_WS_URL',
+    defaultValue: '',
+  );
+
+  static bool get mqttUseWebSocket => mqttWsUrl.isNotEmpty;
+
   static const Duration accessTokenExpiry = Duration(minutes: 15);
   static const Duration pttTimeout = Duration(seconds: 60);
   static const int audioBitrate = 32000;

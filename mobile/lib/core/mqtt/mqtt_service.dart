@@ -18,8 +18,18 @@ class MqttService {
       _client?.connectionStatus?.state == MqttConnectionState.connected;
 
   Future<void> connect({required String clientId}) async {
-    _client = MqttServerClient(AppConfig.mqttHost, clientId)
-      ..port = AppConfig.mqttPort
+    if (AppConfig.mqttUseWebSocket) {
+      _client = MqttServerClient.withPort(
+        AppConfig.mqttWsUrl,
+        clientId,
+        443,
+      )..useWebSocket = true;
+    } else {
+      _client = MqttServerClient(AppConfig.mqttHost, clientId)
+        ..port = AppConfig.mqttPort;
+    }
+
+    _client!
       ..keepAlivePeriod = 30
       ..autoReconnect = true
       ..resubscribeOnAutoReconnect = true
