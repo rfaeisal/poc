@@ -12,6 +12,7 @@ import userRoutes from './routes/users';
 import organizationRoutes from './routes/organizations';
 import adminRoutes from './routes/admin';
 import livekitWebhookRoute from './routes/webhook/livekit';
+import echoRoutes from './routes/echo';
 
 export function buildApp() {
   const app = Fastify({
@@ -38,6 +39,7 @@ export function buildApp() {
   app.register(organizationRoutes);
   app.register(adminRoutes);
   app.register(livekitWebhookRoute);
+  app.register(echoRoutes);
 
   // Health check
   app.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
