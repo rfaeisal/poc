@@ -46,9 +46,15 @@ class PushNotificationService {
       return;
     }
 
-    final token = await messaging.getToken();
-    if (token != null) {
-      await _registerDevice(token);
+    try {
+      final token = await messaging.getToken();
+      if (token != null) {
+        await _registerDevice(token);
+      }
+    } catch (e) {
+      debugPrint('Failed to get FCM token: $e');
+      _initialized = false;
+      return;
     }
 
     _tokenRefreshSub = messaging.onTokenRefresh.listen(_registerDevice);

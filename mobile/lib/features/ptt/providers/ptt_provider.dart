@@ -109,7 +109,7 @@ class PttNotifier extends StateNotifier<PttState> {
 
     try {
       await _livekit.connect(
-        url: result.livekitUrl,
+        url: AppConfig.livekitUrl,
         token: result.livekitToken,
       );
 

@@ -60,7 +60,7 @@ class ChannelsNotifier extends StateNotifier<ChannelsState> {
     try {
       final response = await _dio.post(
         ApiEndpoints.joinChannel(channelId),
-        data: password != null ? {'password': password} : null,
+        data: password != null ? {'password': password} : {},
       );
       return JoinChannelResult.fromJson(
           response.data as Map<String, dynamic>);
@@ -74,7 +74,7 @@ class ChannelsNotifier extends StateNotifier<ChannelsState> {
 
   Future<void> leaveChannel(String channelId) async {
     try {
-      await _dio.post(ApiEndpoints.leaveChannel(channelId));
+      await _dio.post(ApiEndpoints.leaveChannel(channelId), data: {});
     } catch (_) {}
   }
 }

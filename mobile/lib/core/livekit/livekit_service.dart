@@ -61,7 +61,9 @@ class LiveKitService {
 
   Future<void> disconnect() async {
     await stopTransmit();
-    await _room?.disconnect();
+    try {
+      await _room?.disconnect();
+    } catch (_) {}
     await _room?.dispose();
     _room = null;
   }

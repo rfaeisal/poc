@@ -61,7 +61,7 @@ class MqttService {
   }
 
   void unsubscribe(String topic) {
-    if (_client == null) return;
+    if (_client == null || !isConnected) return;
     _client!.unsubscribe(topic);
     _subscribedTopics.remove(topic);
   }
