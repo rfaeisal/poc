@@ -131,19 +131,18 @@ class ChannelMembersNotifier extends StateNotifier<ChannelMembersState> {
   void _handlePttEvent(Map<String, dynamic> payload) {
     final userId = payload['userId'] as String?;
     final action = payload['action'] as String?;
-    if (action == null) return;
+    if (action == null || userId == null) return;
 
-    if (action == 'start' && userId != null) {
+    if (action == 'start') {
       final updated = Map<String, ChannelMember>.from(state.members);
       if (updated.containsKey(userId)) {
         updated[userId] = updated[userId]!.copyWith(isTransmitting: true);
       }
       state = state.copyWith(members: updated, transmitterId: userId);
-    } else if (action == 'end') {
+    } else if (action == 'end' && state.transmitterId == userId) {
       final updated = Map<String, ChannelMember>.from(state.members);
-      final prevId = state.transmitterId;
-      if (prevId != null && updated.containsKey(prevId)) {
-        updated[prevId] = updated[prevId]!.copyWith(isTransmitting: false);
+      if (updated.containsKey(userId)) {
+        updated[userId] = updated[userId]!.copyWith(isTransmitting: false);
       }
       state = state.copyWith(members: updated, clearTransmitter: true);
     }
@@ -157,6 +156,7 @@ class ChannelMembersNotifier extends StateNotifier<ChannelMembersState> {
     await _mqttSub?.cancel();
     _mqttSub = null;
     _currentChannelId = null;
+    await _mqtt.disconnect();
     state = const ChannelMembersState();
   }
 

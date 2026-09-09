@@ -10,8 +10,10 @@ import '../firebase/firebase_guard.dart';
 import 'device_info_service.dart';
 
 final pushNotificationServiceProvider =
-    Provider.autoDispose<PushNotificationService>((ref) {
-  return PushNotificationService();
+    Provider<PushNotificationService>((ref) {
+  final service = PushNotificationService();
+  ref.onDispose(() => service.dispose());
+  return service;
 });
 
 class PushNotificationService {
@@ -19,11 +21,16 @@ class PushNotificationService {
   StreamSubscription<String>? _tokenRefreshSub;
   StreamSubscription<RemoteMessage>? _foregroundSub;
   String? _registeredDeviceId;
+  bool _initialized = false;
+
+  bool get isInitialized => _initialized;
 
   void setDio(Dio dio) => _dio = dio;
 
   Future<void> initialize() async {
+    if (_initialized) return;
     if (!FirebaseGuard.isInitialized) return;
+    _initialized = true;
 
     final messaging = FirebaseMessaging.instance;
 

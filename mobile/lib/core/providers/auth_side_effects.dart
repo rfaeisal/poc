@@ -15,8 +15,10 @@ final authSideEffectsProvider = Provider<void>((ref) {
 
     crashService.setUserId(user.id);
 
-    pushService.setDio(dio);
-    pushService.initialize();
+    if (!pushService.isInitialized) {
+      pushService.setDio(dio);
+      pushService.initialize();
+    }
   } else {
     crashService.clearUserId();
     pushService.unregisterDevice();
