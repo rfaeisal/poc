@@ -6,6 +6,7 @@ import android.content.Context
 import android.media.AudioManager
 import android.os.Build
 import android.os.PowerManager
+import android.net.wifi.WifiManager
 import android.telephony.TelephonyManager
 import android.view.KeyEvent
 import android.view.WindowInsets
@@ -175,14 +176,18 @@ class MainActivity : FlutterActivity() {
 
     private fun getSignalDbm(): Int? {
         return try {
-            val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val ss = tm.signalStrength
-                ss?.cellSignalStrengths?.firstOrNull()?.dbm
-            } else {
-                null
-            }
-        } catch (_: Exception) { null }
+            val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            @Suppress("DEPRECATION")
+            val rssi = wm.connectionInfo.rssi
+            if (rssi != -127) rssi else null
+        } catch (_: Exception) {
+            try {
+                val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    tm.signalStrength?.cellSignalStrengths?.firstOrNull()?.dbm
+                } else null
+            } catch (_: Exception) { null }
+        }
     }
 
     private fun setMaxVolume() {
