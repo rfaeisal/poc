@@ -18,5 +18,5 @@ class FlavorConfig {
   static bool get isHytera => current == AppFlavor.hytera;
   static bool get isPocPecek => current == AppFlavor.pocPecek;
 
-  static String get appName => isHytera ? 'POC-PTX' : 'POC-Pecek';
+  static String get appName => isHytera ? 'POC-SMART' : 'POC-Pecek';
 }

@@ -226,7 +226,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
               child: Text(
-                'POC-PTX $version',
+                'POC-SMART $version',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontFamily: 'monospace',

@@ -14,7 +14,7 @@ class HyteraApp extends ConsumerWidget {
     ref.watch(authSideEffectsProvider);
 
     return MaterialApp.router(
-      title: 'POC-PTX',
+      title: 'POC-SMART',
       debugShowCheckedModeBanner: false,
       theme: HyteraTheme.dark,
       themeMode: ThemeMode.dark,

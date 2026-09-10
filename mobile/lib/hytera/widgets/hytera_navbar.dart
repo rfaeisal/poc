@@ -27,16 +27,10 @@ class HyteraNavbar extends StatelessWidget {
             onTap: () => onTap(0),
           ),
           _NavItem(
-            icon: Icons.chat_bubble_outline,
-            label: 'Pesan',
-            isActive: currentIndex == 1,
-            onTap: () => onTap(1),
-          ),
-          _NavItem(
             icon: Icons.settings_outlined,
             label: 'Pengaturan',
-            isActive: currentIndex == 2,
-            onTap: () => onTap(2),
+            isActive: currentIndex == 1,
+            onTap: () => onTap(1),
           ),
         ],
       ),

@@ -19,7 +19,7 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
     with WidgetsBindingObserver {
   int _currentIndex = 0;
 
-  static const _routes = ['/channel', '/pesan', '/pengaturan'];
+  static const _routes = ['/channel', '/pengaturan'];
 
   @override
   void initState() {

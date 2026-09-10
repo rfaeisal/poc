@@ -17,6 +17,24 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _checkingAutoLogin = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _tryAutoLogin();
+  }
+
+  Future<void> _tryAutoLogin() async {
+    await ref.read(authProvider.notifier).tryAutoLogin();
+    if (!mounted) return;
+    final auth = ref.read(authProvider);
+    if (auth.isAuthenticated) {
+      context.go('/channel');
+    } else {
+      setState(() => _checkingAutoLogin = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -44,6 +62,22 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
 
+    if (_checkingAutoLogin) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0B0F1A),
+        body: Center(
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Color(0xFF4ADE80),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F1A),
       body: SafeArea(
@@ -55,32 +89,24 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF0F1E2E),
-                      border: Border.all(
-                        color: const Color(0xFF1E4A8A),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.cell_tower,
-                      size: 20,
-                      color: Color(0xFF4A9EFF),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.asset(
+                      'assets/images/logo_poc_smart.jpeg',
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   const Text(
-                    'POC-PTX',
+                    'POC-SMART',
                     style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFFE2E8F0),
-                      letterSpacing: 1.5,
+                      letterSpacing: 2,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -89,11 +115,11 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
                     style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 7.5,
-                      color: Color(0xFF4A6A8A),
-                      letterSpacing: 0.5,
+                      color: Color(0xFF4A9EFF),
+                      letterSpacing: 0.8,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   _buildLabel('EMAIL'),
                   const SizedBox(height: 3),
                   TextFormField(
@@ -152,7 +178,7 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
                     child: ElevatedButton(
                       onPressed: auth.isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E4A8A),
+                        backgroundColor: const Color(0xFF1B6B3A),
                         foregroundColor: const Color(0xFFE2E8F0),
                         padding: const EdgeInsets.symmetric(vertical: 7),
                         shape: RoundedRectangleBorder(
@@ -182,7 +208,7 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
                   ),
                   const SizedBox(height: 18),
                   const Text(
-                    'POC-PTX v1.0.0 · TLS 1.3',
+                    'POC-SMART v1.0.0 · TLS 1.3',
                     style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 6.5,

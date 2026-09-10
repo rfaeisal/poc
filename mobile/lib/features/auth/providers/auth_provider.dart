@@ -100,6 +100,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final message = e.response?.data?['message'] as String? ??
           'Login gagal. Coba lagi.';
       state = state.copyWith(isLoading: false, error: message);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Login gagal: $e');
     }
   }
 

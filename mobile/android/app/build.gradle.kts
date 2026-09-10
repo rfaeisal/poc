@@ -42,7 +42,7 @@ android {
         create("hytera") {
             dimension = "app"
             applicationId = "com.fakhriez.poc_ptx"
-            resValue("string", "app_name", "POC-PTX")
+            resValue("string", "app_name", "POC-SMART")
             minSdk = 31
         }
     }
