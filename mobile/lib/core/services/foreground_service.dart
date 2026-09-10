@@ -1,17 +1,23 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
+import '../../flavors/flavor_config.dart';
+
 class PttForegroundService {
   static bool _initialized = false;
+
+  static String get _appName => FlavorConfig.appName;
 
   static Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
 
+    final isHytera = FlavorConfig.isHytera;
+
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'ptt_foreground',
         channelName: 'PTT Active',
-        channelDescription: 'POC-Pecek push-to-talk is active',
+        channelDescription: '$_appName push-to-talk is active',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
         enableVibration: false,
@@ -22,8 +28,8 @@ class PttForegroundService {
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
         eventAction: ForegroundTaskEventAction.nothing(),
-        autoRunOnBoot: false,
-        autoRunOnMyPackageReplaced: false,
+        autoRunOnBoot: isHytera,
+        autoRunOnMyPackageReplaced: isHytera,
         allowWakeLock: true,
         allowWifiLock: true,
       ),
@@ -33,7 +39,7 @@ class PttForegroundService {
   static Future<void> start(String channelName) async {
     await init();
     await FlutterForegroundTask.startService(
-      notificationTitle: 'POC-Pecek',
+      notificationTitle: _appName,
       notificationText: 'Connected to $channelName',
       callback: _startCallback,
     );
@@ -41,7 +47,7 @@ class PttForegroundService {
 
   static Future<void> updateNotification(String text) async {
     await FlutterForegroundTask.updateService(
-      notificationTitle: 'POC-Pecek',
+      notificationTitle: _appName,
       notificationText: text,
     );
   }

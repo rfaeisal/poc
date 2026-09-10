@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../services/kiosk_service.dart';
 import '../widgets/hytera_navbar.dart';
 
 class HyteraMainScreen extends ConsumerStatefulWidget {
@@ -13,10 +14,37 @@ class HyteraMainScreen extends ConsumerStatefulWidget {
   ConsumerState<HyteraMainScreen> createState() => _HyteraMainScreenState();
 }
 
-class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen> {
+class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
+    with WidgetsBindingObserver {
   int _currentIndex = 0;
 
   static const _routes = ['/channel', '/pesan', '/pengaturan'];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initKiosk();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> _initKiosk() async {
+    await KioskService.enableKiosk();
+    await KioskService.showOnLockScreen();
+    await KioskService.keepScreenOn();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      KioskService.enableKiosk();
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -38,18 +66,21 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B0F1A),
-      body: FocusScope(
-        autofocus: true,
-        child: Column(
-          children: [
-            Expanded(child: widget.child),
-            HyteraNavbar(
-              currentIndex: _currentIndex,
-              onTap: _onTabTap,
-            ),
-          ],
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0B0F1A),
+        body: FocusScope(
+          autofocus: true,
+          child: Column(
+            children: [
+              Expanded(child: widget.child),
+              HyteraNavbar(
+                currentIndex: _currentIndex,
+                onTap: _onTabTap,
+              ),
+            ],
+          ),
         ),
       ),
     );

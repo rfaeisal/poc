@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/echo_test/providers/echo_test_provider.dart';
 import '../../features/settings/providers/settings_provider.dart';
+import '../services/kiosk_service.dart';
 
 class HyteraPengaturanScreen extends ConsumerWidget {
   const HyteraPengaturanScreen({super.key});
@@ -190,7 +191,71 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             if (context.mounted) context.go('/login');
           },
         ),
+
+        const SizedBox(height: 8),
+        _SectionHeader(title: 'APLIKASI'),
+        _SettingItem(
+          icon: Icons.exit_to_app,
+          name: 'Keluar Aplikasi',
+          description: 'Tutup aplikasi sepenuhnya',
+          isDestructive: true,
+          onTap: () => _confirmExit(context),
+        ),
       ],
+    );
+  }
+
+  void _confirmExit(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F1E2E),
+        title: const Text(
+          'KELUAR APLIKASI',
+          style: TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFFE2E8F0),
+          ),
+        ),
+        content: const Text(
+          'Aplikasi akan ditutup sepenuhnya. PTT tidak akan aktif sampai aplikasi dibuka kembali.',
+          style: TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 9,
+            color: Color(0xFF94A3B8),
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(
+              'BATAL',
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 9,
+                color: Color(0xFF4A9EFF),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              KioskService.exitApp();
+            },
+            child: const Text(
+              'KELUAR',
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 9,
+                color: Color(0xFFEF4444),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
