@@ -1,0 +1,252 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/auth/providers/auth_provider.dart';
+
+class HyteraLoginScreen extends ConsumerStatefulWidget {
+  const HyteraLoginScreen({super.key});
+
+  @override
+  ConsumerState<HyteraLoginScreen> createState() =>
+      _HyteraLoginScreenState();
+}
+
+class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref.read(authProvider.notifier).login(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+
+    if (!mounted) return;
+    final auth = ref.read(authProvider);
+    if (auth.isAuthenticated) {
+      context.go('/channel');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = ref.watch(authProvider);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0B0F1A),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF0F1E2E),
+                      border: Border.all(
+                        color: const Color(0xFF1E4A8A),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.cell_tower,
+                      size: 20,
+                      color: Color(0xFF4A9EFF),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'POC-PTX',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFE2E8F0),
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'DIGITAL HT NETWORK',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 7.5,
+                      color: Color(0xFF4A6A8A),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildLabel('EMAIL'),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                    controller: _emailController,
+                    style: _inputTextStyle,
+                    decoration: _inputDecoration('callsign@poc-ptx.id'),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Email wajib diisi' : null,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildLabel('PASSWORD'),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                    controller: _passwordController,
+                    style: _inputTextStyle,
+                    decoration: _inputDecoration('••••••••').copyWith(
+                      suffixIcon: GestureDetector(
+                        onTap: () =>
+                            setState(() => _obscurePassword = !_obscurePassword),
+                        child: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          size: 14,
+                          color: const Color(0xFF4A6A8A),
+                        ),
+                      ),
+                      suffixIconConstraints: const BoxConstraints(
+                        minWidth: 28,
+                        minHeight: 20,
+                      ),
+                    ),
+                    obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _login(),
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Password wajib diisi' : null,
+                  ),
+                  if (auth.error != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      auth.error!,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 7,
+                        color: Color(0xFFF87171),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: auth.isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1E4A8A),
+                        foregroundColor: const Color(0xFFE2E8F0),
+                        padding: const EdgeInsets.symmetric(vertical: 7),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: auth.isLoading
+                          ? const SizedBox(
+                              height: 12,
+                              width: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: Color(0xFF4A9EFF),
+                              ),
+                            )
+                          : const Text(
+                              'MASUK',
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'POC-PTX v1.0.0 · TLS 1.3',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 6.5,
+                      color: Color(0xFF2A4A6A),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 7,
+          color: Color(0xFF4A6A8A),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  TextStyle get _inputTextStyle => const TextStyle(
+        fontFamily: 'monospace',
+        fontSize: 9,
+        color: Color(0xFFE2E8F0),
+      );
+
+  InputDecoration _inputDecoration(String hint) => InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 9,
+          color: Color(0xFF4A6A8A),
+        ),
+        filled: true,
+        fillColor: const Color(0xFF0F1E2E),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        isDense: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4),
+          borderSide: const BorderSide(color: Color(0xFF1E2A3A)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4),
+          borderSide: const BorderSide(color: Color(0xFF1E2A3A)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4),
+          borderSide: const BorderSide(color: Color(0xFF4A9EFF)),
+        ),
+        errorStyle: const TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 7,
+          color: Color(0xFFF87171),
+        ),
+      );
+}

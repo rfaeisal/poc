@@ -32,6 +32,21 @@ android {
         multiDexEnabled = true
     }
 
+    flavorDimensions += "app"
+    productFlavors {
+        create("pocPecek") {
+            dimension = "app"
+            applicationId = "com.fakhriez.poc_pecek"
+            resValue("string", "app_name", "POC-Pecek")
+        }
+        create("hytera") {
+            dimension = "app"
+            applicationId = "com.fakhriez.poc_ptx"
+            resValue("string", "app_name", "POC-PTX")
+            minSdk = 31
+        }
+    }
+
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {

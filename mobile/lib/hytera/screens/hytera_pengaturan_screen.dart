@@ -1,0 +1,656 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/auth/providers/auth_provider.dart';
+import '../../features/echo_test/providers/echo_test_provider.dart';
+import '../../features/settings/providers/settings_provider.dart';
+
+class HyteraPengaturanScreen extends ConsumerWidget {
+  const HyteraPengaturanScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final echoState = ref.watch(echoTestProvider);
+
+    return ListView(
+      children: [
+        // Header
+        Container(
+          color: const Color(0xFF060C18),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+          child: const Text(
+            'PENGATURAN',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 9,
+              color: Color(0xFF4A9EFF),
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+
+        // DIAGNOSTIK
+        _SectionHeader(title: 'DIAGNOSTIK'),
+        _EchoTestCard(echoState: echoState, ref: ref),
+
+        // AUDIO
+        _SectionHeader(title: 'AUDIO'),
+        _SettingItem(
+          icon: Icons.volume_up,
+          name: 'RX Gain',
+          description: 'Volume suara masuk',
+          trailing: Text(
+            _gainLabel(settings.speakerGain),
+            style: const TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 8,
+              color: Color(0xFF4A9EFF),
+            ),
+          ),
+        ),
+        _SliderRow(
+          value: settings.speakerGain,
+          onChanged: (v) =>
+              ref.read(settingsProvider.notifier).setSpeakerGain(v),
+          minLabel: '-10 dB',
+          maxLabel: '+10 dB',
+        ),
+        _SettingItem(
+          icon: Icons.mic,
+          name: 'TX Gain',
+          description: 'Volume mikrofon',
+          trailing: Text(
+            _gainLabel(settings.micGain),
+            style: const TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 8,
+              color: Color(0xFF4A9EFF),
+            ),
+          ),
+        ),
+        _SliderRow(
+          value: settings.micGain,
+          onChanged: (v) =>
+              ref.read(settingsProvider.notifier).setMicGain(v),
+          minLabel: '-10 dB',
+          maxLabel: '+10 dB',
+        ),
+
+        // MAPPING TOMBOL FISIK
+        _SectionHeader(title: 'MAPPING TOMBOL FISIK'),
+        Container(
+          color: const Color(0xFF060C18),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Color(0xFF0A1020)),
+            ),
+          ),
+          child: const Text(
+            'Tekan tombol keyboard atau Bluetooth eksternal untuk menetapkan fungsi.',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 6.5,
+              color: Color(0xFF2A4A6A),
+              height: 1.4,
+            ),
+          ),
+        ),
+        _KeyMappingItem(
+          icon: Icons.mic,
+          name: 'Tombol PTT',
+          description: 'Tahan untuk transmit',
+          keyLabel: 'SPACE',
+        ),
+        _KeyMappingItem(
+          icon: Icons.keyboard_arrow_up,
+          name: 'Channel Naik',
+          description: 'Channel berikutnya',
+          keyLabel: 'VOL +',
+        ),
+        _KeyMappingItem(
+          icon: Icons.keyboard_arrow_down,
+          name: 'Channel Turun',
+          description: 'Channel sebelumnya',
+          keyLabel: 'VOL -',
+        ),
+
+        // VOX
+        _SectionHeader(title: 'VOX'),
+        _ToggleItem(
+          icon: Icons.graphic_eq,
+          name: 'VOX',
+          description: 'Transmit otomatis oleh suara',
+          value: settings.voxEnabled,
+          onChanged: (v) =>
+              ref.read(settingsProvider.notifier).setVoxEnabled(v),
+        ),
+
+        // LOKASI
+        _SectionHeader(title: 'LOKASI'),
+        _ToggleItem(
+          icon: Icons.location_on,
+          name: 'Share Location',
+          description: 'Tampilkan posisi di peta',
+          value: settings.locationSharing,
+          onChanged: (v) =>
+              ref.read(settingsProvider.notifier).setLocationSharing(v),
+        ),
+
+        // BLUETOOTH
+        _SectionHeader(title: 'BLUETOOTH'),
+        _SettingItem(
+          icon: Icons.bluetooth,
+          name: 'Bluetooth PTT',
+          description: settings.bluetoothDeviceName ?? 'Tidak terhubung',
+          trailing: settings.bluetoothDeviceName != null
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFF4ADE80),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'Terhubung',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 8,
+                        color: Color(0xFF4ADE80),
+                      ),
+                    ),
+                  ],
+                )
+              : null,
+        ),
+
+        // AKUN
+        _SectionHeader(title: 'AKUN'),
+        _SettingItem(
+          icon: Icons.grid_view,
+          name: 'Device Info',
+          description: 'Diagnostics & debug info',
+        ),
+        _SettingItem(
+          icon: Icons.logout,
+          name: 'Logout',
+          description:
+              'Keluar dari ${ref.watch(authProvider).user?.profile.callsign ?? ""}',
+          isDestructive: true,
+          onTap: () async {
+            await ref.read(authProvider.notifier).logout();
+            if (context.mounted) context.go('/login');
+          },
+        ),
+      ],
+    );
+  }
+
+  static String _gainLabel(double value) {
+    final db = (value * 20 - 10).round();
+    return '${db >= 0 ? "+" : ""}$db dB';
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF060910),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFF0A1020)),
+        ),
+      ),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 7,
+          color: Color(0xFF2A4A6A),
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingItem extends StatelessWidget {
+  final IconData icon;
+  final String name;
+  final String description;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final bool isDestructive;
+
+  const _SettingItem({
+    required this.icon,
+    required this.name,
+    required this.description,
+    this.trailing,
+    this.onTap,
+    this.isDestructive = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Color(0xFF0A1020)),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: isDestructive
+                    ? const Color(0xFF1A0808)
+                    : const Color(0xFF0F1E2E),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(
+                icon,
+                size: 11,
+                color: isDestructive
+                    ? const Color(0xFFF87171)
+                    : const Color(0xFF4A9EFF),
+              ),
+            ),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: isDestructive
+                          ? const Color(0xFFF87171)
+                          : const Color(0xFF94A3B8),
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 7,
+                      color: Color(0xFF2A4A6A),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ?trailing,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ToggleItem extends StatelessWidget {
+  final IconData icon;
+  final String name;
+  final String description;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _ToggleItem({
+    required this.icon,
+    required this.name,
+    required this.description,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFF0A1020)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F1E2E),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(icon, size: 11, color: const Color(0xFF4A9EFF)),
+          ),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF94A3B8),
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 7,
+                    color: Color(0xFF2A4A6A),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => onChanged(!value),
+            child: Container(
+              width: 22,
+              height: 12,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                color: value
+                    ? const Color(0xFF0F6E56)
+                    : const Color(0xFF0F2040),
+                border: Border.all(
+                  color: value
+                      ? const Color(0xFF1D9E75)
+                      : const Color(0xFF1E3A5F),
+                ),
+              ),
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 150),
+                alignment:
+                    value ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 1),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: value
+                        ? const Color(0xFF4ADE80)
+                        : const Color(0xFF2A4A6A),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KeyMappingItem extends StatelessWidget {
+  final IconData icon;
+  final String name;
+  final String description;
+  final String keyLabel;
+
+  const _KeyMappingItem({
+    required this.icon,
+    required this.name,
+    required this.description,
+    required this.keyLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFF0A1020)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F1E2E),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(icon, size: 11, color: const Color(0xFF4A9EFF)),
+          ),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF94A3B8),
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 7,
+                    color: Color(0xFF2A4A6A),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F1E2E),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: const Color(0xFF1E4A8A)),
+            ),
+            child: Text(
+              keyLabel,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 8,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF4A9EFF),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SliderRow extends StatelessWidget {
+  final double value;
+  final ValueChanged<double> onChanged;
+  final String minLabel;
+  final String maxLabel;
+
+  const _SliderRow({
+    required this.value,
+    required this.onChanged,
+    required this.minLabel,
+    required this.maxLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF060C18),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFF0A1020)),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                minLabel,
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 7,
+                  color: Color(0xFF2A4A6A),
+                ),
+              ),
+              Text(
+                maxLabel,
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 7,
+                  color: Color(0xFF4A9EFF),
+                ),
+              ),
+            ],
+          ),
+          SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: const Color(0xFF4A9EFF),
+              inactiveTrackColor: const Color(0xFF0F2040),
+              thumbColor: const Color(0xFF4A9EFF),
+              thumbShape:
+                  const RoundSliderThumbShape(enabledThumbRadius: 5),
+              trackHeight: 2,
+              overlayShape: SliderComponentShape.noOverlay,
+            ),
+            child: Slider(
+              value: value,
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EchoTestCard extends StatelessWidget {
+  final EchoTestState echoState;
+  final WidgetRef ref;
+
+  const _EchoTestCard({required this.echoState, required this.ref});
+
+  Color _latencyColor(int? ms) {
+    if (ms == null) return const Color(0xFF4A6A8A);
+    if (ms < 200) return const Color(0xFF4ADE80);
+    if (ms < 500) return const Color(0xFFFBBF24);
+    return const Color(0xFFEF4444);
+  }
+
+  String _statusText(int? ms) {
+    if (ms == null) return 'Belum diuji';
+    if (ms < 200) return 'Latency sangat baik';
+    if (ms < 500) return 'Latency cukup baik';
+    return 'Latency tinggi';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: const BoxDecoration(
+        color: Color(0xFF060C18),
+        border: Border(
+          bottom: BorderSide(color: Color(0xFF0A1020)),
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            echoState.latencyMs != null
+                ? '${echoState.latencyMs} ms'
+                : '-- ms',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: _latencyColor(echoState.latencyMs),
+            ),
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'ROUND TRIP LATENCY',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 7,
+              color: Color(0xFF2A4A6A),
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: echoState.status == EchoTestStatus.idle ||
+                    echoState.status == EchoTestStatus.error
+                ? () => ref.read(echoTestProvider.notifier).start()
+                : null,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F1E2E),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: const Color(0xFF1E4A8A)),
+              ),
+              child: Text(
+                echoState.status == EchoTestStatus.connecting
+                    ? 'MENGHUBUNGKAN...'
+                    : 'MULAI ECHO TEST',
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF4A9EFF),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _statusText(echoState.latencyMs),
+            style: const TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 7,
+              color: Color(0xFF4A6A8A),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

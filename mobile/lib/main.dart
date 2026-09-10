@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'core/firebase/firebase_guard.dart';
 import 'core/services/foreground_service.dart';
+import 'flavors/flavor_config.dart';
+import 'hytera/hytera_app.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -38,7 +40,9 @@ void main() async {
       };
     }
 
-    runApp(const ProviderScope(child: App()));
+    runApp(ProviderScope(
+      child: FlavorConfig.isHytera ? const HyteraApp() : const App(),
+    ));
   }, (error, stack) {
     if (FirebaseGuard.isInitialized) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);

@@ -13,4 +13,10 @@ class MqttTopics {
 
   static String userLocation(String userId) =>
       'poc/users/$userId/location';
+
+  static String channelMessages(String channelId) =>
+      'poc/channels/$channelId/messages';
+
+  static String personalMessages(String userId) =>
+      'poc/users/$userId/messages';
 }
