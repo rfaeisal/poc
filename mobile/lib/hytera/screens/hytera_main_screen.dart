@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../services/hardware_key_service.dart';
 import '../services/kiosk_service.dart';
 import '../widgets/hytera_navbar.dart';
 
@@ -45,6 +46,7 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
     if (state == AppLifecycleState.resumed) {
       KioskService.enableKiosk();
     } else if (state == AppLifecycleState.paused) {
+      ref.read(hardwareKeyProvider.notifier).resetPttState();
       KioskService.bringToFront();
     }
   }

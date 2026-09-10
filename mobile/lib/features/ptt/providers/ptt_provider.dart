@@ -32,6 +32,7 @@ class PttState {
   final bool isLocked;
   final String? currentSpeakerCallsign;
   final String? currentSpeakerId;
+  final String? lastSpeakerCallsign;
   final String? channelName;
   final String? channelId;
   final String? error;
@@ -42,6 +43,7 @@ class PttState {
     this.isLocked = false,
     this.currentSpeakerCallsign,
     this.currentSpeakerId,
+    this.lastSpeakerCallsign,
     this.channelName,
     this.channelId,
     this.error,
@@ -59,6 +61,7 @@ class PttState {
     String? currentSpeakerCallsign,
     String? currentSpeakerId,
     bool clearSpeaker = false,
+    String? lastSpeakerCallsign,
     String? channelName,
     String? channelId,
     String? error,
@@ -71,6 +74,7 @@ class PttState {
             clearSpeaker ? null : (currentSpeakerCallsign ?? this.currentSpeakerCallsign),
         currentSpeakerId:
             clearSpeaker ? null : (currentSpeakerId ?? this.currentSpeakerId),
+        lastSpeakerCallsign: lastSpeakerCallsign ?? this.lastSpeakerCallsign,
         channelName: channelName ?? this.channelName,
         channelId: channelId ?? this.channelId,
         error: error,
@@ -157,15 +161,15 @@ class PttNotifier extends StateNotifier<PttState> {
     final action = payload['action'] as String?;
     if (userId == null || action == null) return;
 
-    // Ignore own PTT events from MQTT
-    if (userId == _myUserId) return;
-
     if (action == 'start') {
+      if (userId == _myUserId) return;
       state = state.copyWith(
         currentSpeakerId: userId,
         currentSpeakerCallsign: callsign,
+        lastSpeakerCallsign: callsign,
       );
     } else if (action == 'end') {
+      if (userId == _myUserId) return;
       if (state.currentSpeakerId == userId) {
         state = state.copyWith(clearSpeaker: true);
       }
@@ -219,6 +223,7 @@ class PttNotifier extends StateNotifier<PttState> {
     state = state.copyWith(
       isTransmitting: false,
       isLocked: false,
+      lastSpeakerCallsign: _myCallsign,
     );
   }
 

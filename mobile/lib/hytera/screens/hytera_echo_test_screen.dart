@@ -21,6 +21,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
 
   @override
   void dispose() {
+    ref.read(echoTestProvider.notifier).stop();
     super.dispose();
   }
 
@@ -28,89 +29,41 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
   Widget build(BuildContext context) {
     final echo = ref.watch(echoTestProvider);
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) {
-          ref.read(echoTestProvider.notifier).stop();
-          Navigator.of(context).pop();
-        }
-      },
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0B0F1A),
-        body: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-              decoration: const BoxDecoration(
-                color: Color(0xFF060C18),
-                border: Border(
-                  bottom: BorderSide(color: Color(0xFF0A1020)),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0B0F1A),
+      body: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+            decoration: const BoxDecoration(
+              color: Color(0xFF060C18),
+              border: Border(
+                bottom: BorderSide(color: Color(0xFF0A1020)),
+              ),
+            ),
+            child: const Row(
+              children: [
+                Text(
+                  'ECHO TEST',
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 9,
+                    color: Color(0xFF4A9EFF),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      ref.read(echoTestProvider.notifier).stop();
-                      Navigator.of(context).pop();
-                    },
-                    child: const Icon(
-                      Icons.arrow_back,
-                      size: 14,
-                      color: Color(0xFF4A9EFF),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'ECHO TEST',
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 9,
-                      color: Color(0xFF4A9EFF),
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (echo.status == EchoTestStatus.ready ||
-                      echo.status == EchoTestStatus.transmitting ||
-                      echo.status == EchoTestStatus.playing)
-                    GestureDetector(
-                      onTap: () {
-                        ref.read(echoTestProvider.notifier).stop();
-                        Navigator.of(context).pop();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(3),
-                          border: Border.all(color: const Color(0xFFEF4444)),
-                        ),
-                        child: const Text(
-                          'STOP',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 7,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFEF4444),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+              ],
             ),
+          ),
 
-            Expanded(
-              child: Center(
-                child: _buildContent(echo),
-              ),
+          Expanded(
+            child: Center(
+              child: _buildContent(echo),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -212,29 +165,36 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Latency
-        if (echo.latencyMs != null) ...[
-          Text(
-            '${echo.latencyMs} ms',
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: _latencyColor(echo.latencyMs),
-            ),
-          ),
-          const SizedBox(height: 2),
-          const Text(
-            'ROUND TRIP',
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 7,
-              color: Color(0xFF2A4A6A),
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
+        // Latency — fixed height so button never shifts
+        SizedBox(
+          height: 38,
+          child: echo.latencyMs != null
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${echo.latencyMs} ms',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: _latencyColor(echo.latencyMs),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'ROUND TRIP',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 7,
+                        color: Color(0xFF2A4A6A),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink(),
+        ),
 
         // PTT Button
         GestureDetector(
@@ -283,7 +243,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
         ),
         const SizedBox(height: 8),
 
-        // Duration
+        // Duration — fixed height
         SizedBox(
           height: 20,
           child: isTransmitting
@@ -332,21 +292,24 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
         ),
         const SizedBox(height: 4),
 
-        // Status text
-        Text(
-          isTransmitting
-              ? 'Bicara sekarang...'
-              : isPlaying
-                  ? 'Mendengarkan echo...'
-                  : 'Tekan & tahan untuk bicara',
-          style: TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 8,
-            color: isTransmitting
-                ? const Color(0xFF4ADE80)
+        // Status text — fixed height
+        SizedBox(
+          height: 14,
+          child: Text(
+            isTransmitting
+                ? 'Bicara sekarang...'
                 : isPlaying
-                    ? const Color(0xFFFBBF24)
-                    : const Color(0xFF4A6A8A),
+                    ? 'Mendengarkan echo...'
+                    : 'Tekan & tahan untuk bicara',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 8,
+              color: isTransmitting
+                  ? const Color(0xFF4ADE80)
+                  : isPlaying
+                      ? const Color(0xFFFBBF24)
+                      : const Color(0xFF4A6A8A),
+            ),
           ),
         ),
       ],

@@ -35,15 +35,15 @@ final hyteraRouter = GoRouter(
           path: '/pengaturan',
           builder: (context, state) => const HyteraPengaturanScreen(),
         ),
+        GoRoute(
+          path: '/echo-test',
+          builder: (context, state) => const HyteraEchoTestScreen(),
+        ),
       ],
     ),
     GoRoute(
       path: '/channel-list',
       builder: (context, state) => const HyteraChannelListScreen(),
-    ),
-    GoRoute(
-      path: '/echo-test',
-      builder: (context, state) => const HyteraEchoTestScreen(),
     ),
   ],
 );

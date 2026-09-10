@@ -96,6 +96,14 @@ class HardwareKeyNotifier extends StateNotifier<KeyBindings> {
     await prefs.remove('$_prefixKey${action.name}');
   }
 
+  void resetPttState() {
+    if (_pttDownTime != null && !_pttLockTriggered) {
+      onPttUp?.call();
+    }
+    _pttDownTime = null;
+    _pttLockTriggered = false;
+  }
+
   bool handleKeyEvent(KeyEvent event) {
     final action = state.actionFor(event.logicalKey);
     if (action == null) return false;

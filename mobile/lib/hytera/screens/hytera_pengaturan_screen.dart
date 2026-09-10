@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/settings/providers/settings_provider.dart';
@@ -44,7 +47,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             size: 14,
             color: Color(0xFF4A6A8A),
           ),
-          onTap: () => context.push('/echo-test'),
+          onTap: () => context.go('/echo-test'),
         ),
 
         // AUDIO
@@ -211,6 +214,30 @@ class HyteraPengaturanScreen extends ConsumerWidget {
           isDestructive: true,
           onTap: () => _confirmExit(context),
         ),
+
+        const SizedBox(height: 12),
+        FutureBuilder<PackageInfo>(
+          future: PackageInfo.fromPlatform(),
+          builder: (context, snapshot) {
+            final info = snapshot.data;
+            final version = info != null
+                ? 'v${info.version} build ${info.buildNumber}'
+                : '...';
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+              child: Text(
+                'POC-PTX $version',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 7,
+                  color: Color(0xFF1E3A5F),
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 8),
       ],
     );
   }
@@ -505,10 +532,21 @@ class _KeyMappingItem extends ConsumerStatefulWidget {
 
 class _KeyMappingItemState extends ConsumerState<_KeyMappingItem> {
   bool _listening = false;
+  Timer? _listenTimer;
 
   void _startListening() {
     setState(() => _listening = true);
     HardwareKeyboard.instance.addHandler(_handleKey);
+    _listenTimer?.cancel();
+    _listenTimer = Timer(const Duration(seconds: 5), _cancelListening);
+  }
+
+  void _cancelListening() {
+    if (!_listening) return;
+    setState(() => _listening = false);
+    HardwareKeyboard.instance.removeHandler(_handleKey);
+    _listenTimer?.cancel();
+    _listenTimer = null;
   }
 
   bool _handleKey(KeyEvent event) {
@@ -516,6 +554,8 @@ class _KeyMappingItemState extends ConsumerState<_KeyMappingItem> {
       ref
           .read(hardwareKeyProvider.notifier)
           .saveBinding(widget.action, event.logicalKey);
+      _listenTimer?.cancel();
+      _listenTimer = null;
       setState(() => _listening = false);
       HardwareKeyboard.instance.removeHandler(_handleKey);
       return true;
@@ -529,6 +569,7 @@ class _KeyMappingItemState extends ConsumerState<_KeyMappingItem> {
 
   @override
   void dispose() {
+    _listenTimer?.cancel();
     if (_listening) {
       HardwareKeyboard.instance.removeHandler(_handleKey);
     }

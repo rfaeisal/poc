@@ -4,18 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets/talk_timer.dart';
 import '../../features/ptt/providers/ptt_provider.dart';
 
-class HyteraSpeakerBox extends ConsumerStatefulWidget {
+class HyteraSpeakerBox extends ConsumerWidget {
   const HyteraSpeakerBox({super.key});
 
   @override
-  ConsumerState<HyteraSpeakerBox> createState() => _HyteraSpeakerBoxState();
-}
-
-class _HyteraSpeakerBoxState extends ConsumerState<HyteraSpeakerBox> {
-  String? _lastSpeakerCallsign;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ptt = ref.watch(pttProvider);
 
     final bool isRx =
@@ -23,10 +16,6 @@ class _HyteraSpeakerBoxState extends ConsumerState<HyteraSpeakerBox> {
     final bool isTx = ptt.isTransmitting && !ptt.isLocked;
     final bool isLocked = ptt.isTransmitting && ptt.isLocked;
     final bool isActive = isRx || isTx || isLocked;
-
-    if (isRx && ptt.currentSpeakerCallsign != null) {
-      _lastSpeakerCallsign = ptt.currentSpeakerCallsign;
-    }
 
     final Color bgColor;
     final Color borderColor;
@@ -59,7 +48,7 @@ class _HyteraSpeakerBoxState extends ConsumerState<HyteraSpeakerBox> {
     } else {
       bgColor = const Color(0xFF080D18);
       borderColor = const Color(0xFF1E3A5F);
-      callsignColor = _lastSpeakerCallsign != null
+      callsignColor = ptt.lastSpeakerCallsign != null
           ? const Color(0xFF4A6A8A)
           : const Color(0xFF2A4A6A);
       badgeText = 'IDLE';
@@ -72,8 +61,8 @@ class _HyteraSpeakerBoxState extends ConsumerState<HyteraSpeakerBox> {
       callsign = 'SAYA';
     } else if (isRx) {
       callsign = ptt.currentSpeakerCallsign ?? '';
-    } else if (_lastSpeakerCallsign != null) {
-      callsign = _lastSpeakerCallsign!;
+    } else if (ptt.lastSpeakerCallsign != null) {
+      callsign = ptt.lastSpeakerCallsign!;
     } else {
       callsign = '---';
     }

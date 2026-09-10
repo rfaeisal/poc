@@ -1,4 +1,5 @@
 import 'package:livekit_client/livekit_client.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../config/app_config.dart';
 
@@ -32,6 +33,8 @@ class LiveKitService {
     );
 
     await _room!.connect(url, token);
+
+    await Permission.microphone.request();
   }
 
   Future<void> startTransmit() async {
