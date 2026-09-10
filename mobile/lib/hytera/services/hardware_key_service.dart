@@ -5,17 +5,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum KeyAction { ptt, channelUp, channelDown }
 
 class KeyBindings {
-  final LogicalKeyboardKey pttKey;
-  final LogicalKeyboardKey channelUpKey;
-  final LogicalKeyboardKey channelDownKey;
+  final LogicalKeyboardKey? pttKey;
+  final LogicalKeyboardKey? channelUpKey;
+  final LogicalKeyboardKey? channelDownKey;
 
   const KeyBindings({
-    this.pttKey = LogicalKeyboardKey.space,
-    this.channelUpKey = LogicalKeyboardKey.audioVolumeUp,
-    this.channelDownKey = LogicalKeyboardKey.audioVolumeDown,
+    this.pttKey,
+    this.channelUpKey,
+    this.channelDownKey,
   });
 
-  KeyBindings copyWithAction(KeyAction action, LogicalKeyboardKey key) {
+  KeyBindings copyWithAction(KeyAction action, LogicalKeyboardKey? key) {
     switch (action) {
       case KeyAction.ptt:
         return KeyBindings(pttKey: key, channelUpKey: channelUpKey, channelDownKey: channelDownKey);
@@ -26,7 +26,7 @@ class KeyBindings {
     }
   }
 
-  LogicalKeyboardKey keyFor(KeyAction action) {
+  LogicalKeyboardKey? keyFor(KeyAction action) {
     switch (action) {
       case KeyAction.ptt:
         return pttKey;
@@ -38,14 +38,15 @@ class KeyBindings {
   }
 
   KeyAction? actionFor(LogicalKeyboardKey key) {
-    if (key == pttKey) return KeyAction.ptt;
-    if (key == channelUpKey) return KeyAction.channelUp;
-    if (key == channelDownKey) return KeyAction.channelDown;
+    if (pttKey != null && key == pttKey) return KeyAction.ptt;
+    if (channelUpKey != null && key == channelUpKey) return KeyAction.channelUp;
+    if (channelDownKey != null && key == channelDownKey) return KeyAction.channelDown;
     return null;
   }
 
   String labelFor(KeyAction action) {
     final key = keyFor(action);
+    if (key == null) return '';
     if (key == LogicalKeyboardKey.space) return 'SPACE';
     if (key == LogicalKeyboardKey.audioVolumeUp) return 'VOL +';
     if (key == LogicalKeyboardKey.audioVolumeDown) return 'VOL -';
@@ -77,9 +78,9 @@ class HardwareKeyNotifier extends StateNotifier<KeyBindings> {
     final downId = prefs.getInt('${_prefixKey}channelDown');
 
     state = KeyBindings(
-      pttKey: pttId != null ? LogicalKeyboardKey(pttId) : LogicalKeyboardKey.space,
-      channelUpKey: upId != null ? LogicalKeyboardKey(upId) : LogicalKeyboardKey.audioVolumeUp,
-      channelDownKey: downId != null ? LogicalKeyboardKey(downId) : LogicalKeyboardKey.audioVolumeDown,
+      pttKey: pttId != null ? LogicalKeyboardKey(pttId) : null,
+      channelUpKey: upId != null ? LogicalKeyboardKey(upId) : null,
+      channelDownKey: downId != null ? LogicalKeyboardKey(downId) : null,
     );
   }
 
@@ -87,6 +88,12 @@ class HardwareKeyNotifier extends StateNotifier<KeyBindings> {
     state = state.copyWithAction(action, key);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('$_prefixKey${action.name}', key.keyId);
+  }
+
+  Future<void> clearBinding(KeyAction action) async {
+    state = state.copyWithAction(action, null);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('$_prefixKey${action.name}');
   }
 
   bool handleKeyEvent(KeyEvent event) {

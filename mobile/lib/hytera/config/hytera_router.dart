@@ -5,6 +5,7 @@ import '../screens/hytera_login_screen.dart';
 import '../screens/hytera_main_screen.dart';
 import '../screens/hytera_channel_screen.dart';
 import '../screens/hytera_channel_list_screen.dart';
+import '../screens/hytera_echo_test_screen.dart';
 import '../screens/hytera_pesan_screen.dart';
 import '../screens/hytera_pengaturan_screen.dart';
 
@@ -39,6 +40,10 @@ final hyteraRouter = GoRouter(
     GoRoute(
       path: '/channel-list',
       builder: (context, state) => const HyteraChannelListScreen(),
+    ),
+    GoRoute(
+      path: '/echo-test',
+      builder: (context, state) => const HyteraEchoTestScreen(),
     ),
   ],
 );

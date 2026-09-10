@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/providers/auth_provider.dart';
-import '../../features/echo_test/providers/echo_test_provider.dart';
 import '../../features/settings/providers/settings_provider.dart';
+import '../services/hardware_key_service.dart';
 import '../services/kiosk_service.dart';
 
 class HyteraPengaturanScreen extends ConsumerWidget {
@@ -13,7 +14,6 @@ class HyteraPengaturanScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
-    final echoState = ref.watch(echoTestProvider);
 
     return ListView(
       children: [
@@ -35,7 +35,17 @@ class HyteraPengaturanScreen extends ConsumerWidget {
 
         // DIAGNOSTIK
         _SectionHeader(title: 'DIAGNOSTIK'),
-        _EchoTestCard(echoState: echoState, ref: ref),
+        _SettingItem(
+          icon: Icons.surround_sound,
+          name: 'Echo Test',
+          description: 'Test mic & speaker, ukur latency',
+          trailing: const Icon(
+            Icons.chevron_right,
+            size: 14,
+            color: Color(0xFF4A6A8A),
+          ),
+          onTap: () => context.push('/echo-test'),
+        ),
 
         // AUDIO
         _SectionHeader(title: 'AUDIO'),
@@ -83,15 +93,15 @@ class HyteraPengaturanScreen extends ConsumerWidget {
         // MAPPING TOMBOL FISIK
         _SectionHeader(title: 'MAPPING TOMBOL FISIK'),
         Container(
-          color: const Color(0xFF060C18),
           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
           decoration: const BoxDecoration(
+            color: Color(0xFF060C18),
             border: Border(
               bottom: BorderSide(color: Color(0xFF0A1020)),
             ),
           ),
           child: const Text(
-            'Tekan tombol keyboard atau Bluetooth eksternal untuk menetapkan fungsi.',
+            'Ketuk badge → tekan tombol fisik untuk set. Tahan lama badge untuk hapus.',
             style: TextStyle(
               fontFamily: 'monospace',
               fontSize: 6.5,
@@ -104,19 +114,19 @@ class HyteraPengaturanScreen extends ConsumerWidget {
           icon: Icons.mic,
           name: 'Tombol PTT',
           description: 'Tahan untuk transmit',
-          keyLabel: 'SPACE',
+          action: KeyAction.ptt,
         ),
         _KeyMappingItem(
           icon: Icons.keyboard_arrow_up,
           name: 'Channel Naik',
           description: 'Channel berikutnya',
-          keyLabel: 'VOL +',
+          action: KeyAction.channelUp,
         ),
         _KeyMappingItem(
           icon: Icons.keyboard_arrow_down,
           name: 'Channel Turun',
           description: 'Channel sebelumnya',
-          keyLabel: 'VOL -',
+          action: KeyAction.channelDown,
         ),
 
         // VOX
@@ -272,9 +282,9 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF060910),
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: const BoxDecoration(
+        color: Color(0xFF060910),
         border: Border(
           bottom: BorderSide(color: Color(0xFF0A1020)),
         ),
@@ -476,21 +486,61 @@ class _ToggleItem extends StatelessWidget {
   }
 }
 
-class _KeyMappingItem extends StatelessWidget {
+class _KeyMappingItem extends ConsumerStatefulWidget {
   final IconData icon;
   final String name;
   final String description;
-  final String keyLabel;
+  final KeyAction action;
 
   const _KeyMappingItem({
     required this.icon,
     required this.name,
     required this.description,
-    required this.keyLabel,
+    required this.action,
   });
 
   @override
+  ConsumerState<_KeyMappingItem> createState() => _KeyMappingItemState();
+}
+
+class _KeyMappingItemState extends ConsumerState<_KeyMappingItem> {
+  bool _listening = false;
+
+  void _startListening() {
+    setState(() => _listening = true);
+    HardwareKeyboard.instance.addHandler(_handleKey);
+  }
+
+  bool _handleKey(KeyEvent event) {
+    if (event is KeyDownEvent && _listening) {
+      ref
+          .read(hardwareKeyProvider.notifier)
+          .saveBinding(widget.action, event.logicalKey);
+      setState(() => _listening = false);
+      HardwareKeyboard.instance.removeHandler(_handleKey);
+      return true;
+    }
+    return false;
+  }
+
+  void _clearBinding() {
+    ref.read(hardwareKeyProvider.notifier).clearBinding(widget.action);
+  }
+
+  @override
+  void dispose() {
+    if (_listening) {
+      HardwareKeyboard.instance.removeHandler(_handleKey);
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final bindings = ref.watch(hardwareKeyProvider);
+    final label = bindings.labelFor(widget.action);
+    final hasBinding = bindings.keyFor(widget.action) != null;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
       decoration: const BoxDecoration(
@@ -507,7 +557,7 @@ class _KeyMappingItem extends StatelessWidget {
               color: const Color(0xFF0F1E2E),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Icon(icon, size: 11, color: const Color(0xFF4A9EFF)),
+            child: Icon(widget.icon, size: 11, color: const Color(0xFF4A9EFF)),
           ),
           const SizedBox(width: 7),
           Expanded(
@@ -515,7 +565,7 @@ class _KeyMappingItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  widget.name,
                   style: const TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 9,
@@ -525,7 +575,7 @@ class _KeyMappingItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  description,
+                  widget.description,
                   style: const TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 7,
@@ -535,20 +585,42 @@ class _KeyMappingItem extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F1E2E),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: const Color(0xFF1E4A8A)),
-            ),
-            child: Text(
-              keyLabel,
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 8,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF4A9EFF),
+          GestureDetector(
+            onTap: _listening ? null : _startListening,
+            onLongPress: hasBinding ? _clearBinding : null,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: _listening
+                    ? const Color(0xFF1A1500)
+                    : const Color(0xFF0F1E2E),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: _listening
+                      ? const Color(0xFFFBBF24)
+                      : hasBinding
+                          ? const Color(0xFF1E4A8A)
+                          : const Color(0xFF1E3A5F),
+                ),
+              ),
+              child: Text(
+                _listening
+                    ? 'TEKAN...'
+                    : hasBinding
+                        ? label
+                        : '---',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                  color: _listening
+                      ? const Color(0xFFFBBF24)
+                      : hasBinding
+                          ? const Color(0xFF4A9EFF)
+                          : const Color(0xFF2A4A6A),
+                ),
               ),
             ),
           ),
@@ -574,9 +646,9 @@ class _SliderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF060C18),
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
       decoration: const BoxDecoration(
+        color: Color(0xFF060C18),
         border: Border(
           bottom: BorderSide(color: Color(0xFF0A1020)),
         ),
@@ -625,97 +697,3 @@ class _SliderRow extends StatelessWidget {
   }
 }
 
-class _EchoTestCard extends StatelessWidget {
-  final EchoTestState echoState;
-  final WidgetRef ref;
-
-  const _EchoTestCard({required this.echoState, required this.ref});
-
-  Color _latencyColor(int? ms) {
-    if (ms == null) return const Color(0xFF4A6A8A);
-    if (ms < 200) return const Color(0xFF4ADE80);
-    if (ms < 500) return const Color(0xFFFBBF24);
-    return const Color(0xFFEF4444);
-  }
-
-  String _statusText(int? ms) {
-    if (ms == null) return 'Belum diuji';
-    if (ms < 200) return 'Latency sangat baik';
-    if (ms < 500) return 'Latency cukup baik';
-    return 'Latency tinggi';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: const BoxDecoration(
-        color: Color(0xFF060C18),
-        border: Border(
-          bottom: BorderSide(color: Color(0xFF0A1020)),
-        ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            echoState.latencyMs != null
-                ? '${echoState.latencyMs} ms'
-                : '-- ms',
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: _latencyColor(echoState.latencyMs),
-            ),
-          ),
-          const SizedBox(height: 2),
-          const Text(
-            'ROUND TRIP LATENCY',
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 7,
-              color: Color(0xFF2A4A6A),
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 6),
-          GestureDetector(
-            onTap: echoState.status == EchoTestStatus.idle ||
-                    echoState.status == EchoTestStatus.error
-                ? () => ref.read(echoTestProvider.notifier).start()
-                : null,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F1E2E),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: const Color(0xFF1E4A8A)),
-              ),
-              child: Text(
-                echoState.status == EchoTestStatus.connecting
-                    ? 'MENGHUBUNGKAN...'
-                    : 'MULAI ECHO TEST',
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 8,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF4A9EFF),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _statusText(echoState.latencyMs),
-            style: const TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 7,
-              color: Color(0xFF4A6A8A),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

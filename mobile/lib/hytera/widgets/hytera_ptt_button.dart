@@ -57,18 +57,26 @@ class HyteraPttButton extends ConsumerWidget {
         Opacity(
           opacity: opacity,
           child: GestureDetector(
-            onLongPressStart: ptt.isBusy || ptt.isLocked
+            onTapDown: ptt.isBusy
                 ? null
-                : (_) {
-                    HapticFeedback.heavyImpact();
-                    notifier.startTransmit();
-                  },
-            onLongPressEnd: ptt.isLocked
+                : ptt.isLocked
+                    ? (_) {
+                        notifier.stopTransmit();
+                      }
+                    : (_) {
+                        HapticFeedback.heavyImpact();
+                        notifier.startTransmit();
+                      },
+            onTapUp: ptt.isBusy || ptt.isLocked
                 ? null
                 : (_) {
                     notifier.stopTransmit();
                   },
-            onDoubleTap: ptt.isBusy ? null : () => notifier.toggleLock(),
+            onTapCancel: ptt.isBusy || ptt.isLocked
+                ? null
+                : () {
+                    notifier.stopTransmit();
+                  },
             child: Container(
               width: 70,
               height: 70,
@@ -112,7 +120,7 @@ class HyteraPttButton extends ConsumerWidget {
         if (isIdle) ...[
           const SizedBox(height: 4),
           const Text(
-            'Tahan bicara · ketuk 2x untuk lock',
+            'Tahan bicara · tahan >2dtk lock',
             style: TextStyle(
               fontFamily: 'monospace',
               fontSize: 6.5,
