@@ -35,6 +35,7 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
 
   Future<void> _initKiosk() async {
     await KioskService.enableKiosk();
+    await KioskService.pinApp();
     await KioskService.showOnLockScreen();
     await KioskService.keepScreenOn();
   }
@@ -43,6 +44,8 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       KioskService.enableKiosk();
+    } else if (state == AppLifecycleState.paused) {
+      KioskService.bringToFront();
     }
   }
 

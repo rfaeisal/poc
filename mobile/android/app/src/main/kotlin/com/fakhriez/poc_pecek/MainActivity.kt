@@ -39,7 +39,16 @@ class MainActivity : FlutterActivity() {
                     }
                     "exitApp" -> {
                         disableKioskMode()
+                        try { stopLockTask() } catch (_: Exception) {}
                         finishAndRemoveTask()
+                        result.success(true)
+                    }
+                    "pinApp" -> {
+                        pinApp()
+                        result.success(true)
+                    }
+                    "unpinApp" -> {
+                        unpinApp()
                         result.success(true)
                     }
                     "bringToFront" -> {
@@ -150,6 +159,18 @@ class MainActivity : FlutterActivity() {
                     or WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
             )
         }
+    }
+
+    private fun pinApp() {
+        try {
+            startLockTask()
+        } catch (_: Exception) {}
+    }
+
+    private fun unpinApp() {
+        try {
+            stopLockTask()
+        } catch (_: Exception) {}
     }
 
     @Deprecated("Deprecated in API 33+")

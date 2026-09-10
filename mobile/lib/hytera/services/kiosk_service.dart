@@ -23,6 +23,18 @@ class KioskService {
     }
   }
 
+  static Future<void> pinApp() async {
+    try {
+      await _channel.invokeMethod('pinApp');
+    } on PlatformException catch (_) {}
+  }
+
+  static Future<void> unpinApp() async {
+    try {
+      await _channel.invokeMethod('unpinApp');
+    } on PlatformException catch (_) {}
+  }
+
   static Future<void> bringToFront() async {
     try {
       await _channel.invokeMethod('bringToFront');
