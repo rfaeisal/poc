@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:just_audio/just_audio.dart';
@@ -123,7 +124,7 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
           adaptiveStream: true,
           dynacast: true,
           defaultAudioOutputOptions:
-              AudioOutputOptions(speakerOn: false),
+              AudioOutputOptions(speakerOn: true),
         ),
       );
       await _subRoom!.connect(
@@ -229,10 +230,15 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
         await AudioManager.instance
             .setSpeakerOutputPreferred(true, force: true);
 
+        try {
+          const platform = MethodChannel('com.fakhriez.poc_ptx/kiosk');
+          await platform.invokeMethod('maxVolume');
+        } catch (_) {}
+
         _player = AudioPlayer(
           audioPipeline: AudioPipeline(
             androidAudioEffects: [
-              AndroidLoudnessEnhancer()..setTargetGain(0.5),
+              AndroidLoudnessEnhancer()..setTargetGain(30.0),
             ],
           ),
         );

@@ -43,32 +43,28 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
     if (ptt.channelName != null) return;
 
     setState(() => _connecting = true);
-    await ref.read(channelsProvider.notifier).fetchChannels();
-    final channels = ref.read(channelsProvider).channels;
-    if (channels.isEmpty || !mounted) {
-      if (mounted) setState(() => _connecting = false);
-      return;
-    }
+    try {
+      await ref.read(channelsProvider.notifier).fetchChannels();
+      final channels = ref.read(channelsProvider).channels;
+      if (channels.isEmpty || !mounted) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    final lastId = prefs.getString('hytera_last_channel');
-    final target = channels.firstWhere(
-      (c) => c.id == lastId,
-      orElse: () => channels.first,
-    );
+      final prefs = await SharedPreferences.getInstance();
+      final lastId = prefs.getString('hytera_last_channel');
+      final target = channels.firstWhere(
+        (c) => c.id == lastId,
+        orElse: () => channels.first,
+      );
 
-    final result = await ref
-        .read(channelsProvider.notifier)
-        .joinChannel(target.id);
+      final result = await ref
+          .read(channelsProvider.notifier)
+          .joinChannel(target.id);
 
-    if (!mounted || result == null) {
-      if (mounted) setState(() => _connecting = false);
-      return;
-    }
+      if (!mounted || result == null) return;
 
-    await prefs.setString('hytera_last_channel', target.id);
-    _joinResult = result;
-    await _connectAll(result);
+      await prefs.setString('hytera_last_channel', target.id);
+      _joinResult = result;
+      await _connectAll(result);
+    } catch (_) {}
     if (mounted) setState(() => _connecting = false);
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../features/auth/providers/auth_provider.dart';
 
@@ -30,7 +31,8 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
     if (!mounted) return;
     final auth = ref.read(authProvider);
     if (auth.isAuthenticated) {
-      context.go('/channel');
+      await Permission.microphone.request();
+      if (mounted) context.go('/channel');
     } else {
       setState(() => _checkingAutoLogin = false);
     }
@@ -54,7 +56,8 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
     if (!mounted) return;
     final auth = ref.read(authProvider);
     if (auth.isAuthenticated) {
-      context.go('/channel');
+      await Permission.microphone.request();
+      if (mounted) context.go('/channel');
     }
   }
 

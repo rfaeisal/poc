@@ -3,6 +3,7 @@ package com.fakhriez.poc_pecek
 import android.app.ActivityManager
 import android.app.KeyguardManager
 import android.content.Context
+import android.media.AudioManager
 import android.os.Build
 import android.os.PowerManager
 import android.view.KeyEvent
@@ -40,8 +41,11 @@ class MainActivity : FlutterActivity() {
                     "exitApp" -> {
                         disableKioskMode()
                         try { stopLockTask() } catch (_: Exception) {}
-                        finishAndRemoveTask()
                         result.success(true)
+                        window.decorView.postDelayed({
+                            finishAndRemoveTask()
+                            android.os.Process.killProcess(android.os.Process.myPid())
+                        }, 300)
                     }
                     "pinApp" -> {
                         pinApp()
@@ -66,6 +70,10 @@ class MainActivity : FlutterActivity() {
                     }
                     "showOnLockScreen" -> {
                         showOnLockScreen()
+                        result.success(true)
+                    }
+                    "maxVolume" -> {
+                        setMaxVolume()
                         result.success(true)
                     }
                     "isKioskEnabled" -> {
@@ -159,6 +167,13 @@ class MainActivity : FlutterActivity() {
                     or WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
             )
         }
+    }
+
+    private fun setMaxVolume() {
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val maxMedia = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, maxMedia, 0)
+        am.isSpeakerphoneOn = true
     }
 
     private fun pinApp() {
