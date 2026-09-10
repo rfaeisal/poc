@@ -6,6 +6,7 @@ import android.content.Context
 import android.media.AudioManager
 import android.os.Build
 import android.os.PowerManager
+import android.telephony.TelephonyManager
 import android.view.KeyEvent
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -71,6 +72,9 @@ class MainActivity : FlutterActivity() {
                     "showOnLockScreen" -> {
                         showOnLockScreen()
                         result.success(true)
+                    }
+                    "getSignalStrength" -> {
+                        result.success(getSignalDbm())
                     }
                     "maxVolume" -> {
                         setMaxVolume()
@@ -167,6 +171,18 @@ class MainActivity : FlutterActivity() {
                     or WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
             )
         }
+    }
+
+    private fun getSignalDbm(): Int? {
+        return try {
+            val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val ss = tm.signalStrength
+                ss?.cellSignalStrengths?.firstOrNull()?.dbm
+            } else {
+                null
+            }
+        } catch (_: Exception) { null }
     }
 
     private fun setMaxVolume() {

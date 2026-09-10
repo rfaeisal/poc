@@ -23,6 +23,7 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
   @override
   void initState() {
     super.initState();
+    Permission.microphone.request();
     _tryAutoLogin();
   }
 
@@ -31,8 +32,7 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
     if (!mounted) return;
     final auth = ref.read(authProvider);
     if (auth.isAuthenticated) {
-      await Permission.microphone.request();
-      if (mounted) context.go('/channel');
+      context.go('/channel');
     } else {
       setState(() => _checkingAutoLogin = false);
     }
@@ -56,8 +56,7 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
     if (!mounted) return;
     final auth = ref.read(authProvider);
     if (auth.isAuthenticated) {
-      await Permission.microphone.request();
-      if (mounted) context.go('/channel');
+      context.go('/channel');
     }
   }
 
