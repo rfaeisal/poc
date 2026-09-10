@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/widgets/talk_timer.dart';
+import '../../features/auth/providers/auth_provider.dart';
+import '../../features/channels/providers/channel_members_provider.dart';
 import '../../features/ptt/providers/ptt_provider.dart';
 
 class HyteraSpeakerBox extends ConsumerWidget {
@@ -67,6 +69,24 @@ class HyteraSpeakerBox extends ConsumerWidget {
       callsign = '---';
     }
 
+    final members = ref.watch(channelMembersProvider).members;
+    final auth = ref.watch(authProvider);
+
+    String? speakerName;
+    if (isTx || isLocked) {
+      speakerName = auth.user?.profile.name;
+    } else if (isRx && ptt.currentSpeakerCallsign != null) {
+      speakerName = members.values
+          .where((m) => m.callsign == ptt.currentSpeakerCallsign)
+          .firstOrNull
+          ?.name;
+    } else if (ptt.lastSpeakerCallsign != null) {
+      speakerName = members.values
+          .where((m) => m.callsign == ptt.lastSpeakerCallsign)
+          .firstOrNull
+          ?.name;
+    }
+
     final connStatus = ptt.connectionStatus;
 
     return Container(
@@ -120,6 +140,16 @@ class HyteraSpeakerBox extends ConsumerWidget {
                     color: callsignColor,
                   ),
                 ),
+                if (speakerName != null)
+                  Text(
+                    speakerName,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 7,
+                      color: Color(0xFF4A6A8A),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 const SizedBox(height: 2),
                 Row(
                   children: [

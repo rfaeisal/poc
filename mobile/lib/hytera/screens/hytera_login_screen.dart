@@ -127,7 +127,7 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
                   TextFormField(
                     controller: _emailController,
                     style: _inputTextStyle,
-                    decoration: _inputDecoration('callsign@poc-ptx.id'),
+                    decoration: _inputDecoration('callsign@poc-smart.id'),
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     validator: (v) =>
