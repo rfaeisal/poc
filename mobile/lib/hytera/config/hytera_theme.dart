@@ -18,12 +18,17 @@ class HyteraTheme {
   static const warning = Color(0xFFFBBF24);
   static const appBarBg = Color(0xFF060910);
   static const dividerColor = Color(0xFF0F1E2E);
+  static const focusBorder = Color(0xFF4A9EFF);
 
   static const _mono = 'monospace';
 
   static ThemeData get dark => ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: background,
+        focusColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent,
         colorScheme: const ColorScheme.dark(
           primary: activeBlue,
           secondary: rxGreen,
@@ -37,20 +42,20 @@ class HyteraTheme {
         ),
         fontFamily: _mono,
         textTheme: const TextTheme(
-          displayLarge: TextStyle(fontFamily: _mono, fontSize: 20, fontWeight: FontWeight.w700, color: text),
-          displayMedium: TextStyle(fontFamily: _mono, fontSize: 18, fontWeight: FontWeight.w700, color: text),
-          headlineLarge: TextStyle(fontFamily: _mono, fontSize: 17, fontWeight: FontWeight.w700, color: text),
-          headlineMedium: TextStyle(fontFamily: _mono, fontSize: 16, fontWeight: FontWeight.w700, color: text),
-          headlineSmall: TextStyle(fontFamily: _mono, fontSize: 15, fontWeight: FontWeight.w600, color: text),
-          titleLarge: TextStyle(fontFamily: _mono, fontSize: 14, fontWeight: FontWeight.w600, color: text),
-          titleMedium: TextStyle(fontFamily: _mono, fontSize: 13, fontWeight: FontWeight.w600, color: text),
-          titleSmall: TextStyle(fontFamily: _mono, fontSize: 12, fontWeight: FontWeight.w600, color: text),
-          bodyLarge: TextStyle(fontFamily: _mono, fontSize: 12, color: textDim),
-          bodyMedium: TextStyle(fontFamily: _mono, fontSize: 11, color: textDim),
-          bodySmall: TextStyle(fontFamily: _mono, fontSize: 10, color: textFaint),
-          labelLarge: TextStyle(fontFamily: _mono, fontSize: 11, fontWeight: FontWeight.w700, color: text, letterSpacing: 0.5),
-          labelMedium: TextStyle(fontFamily: _mono, fontSize: 9, fontWeight: FontWeight.w600, color: textDim, letterSpacing: 0.5),
-          labelSmall: TextStyle(fontFamily: _mono, fontSize: 8, fontWeight: FontWeight.w500, color: textFaint, letterSpacing: 0.5),
+          displayLarge: TextStyle(fontFamily: _mono, fontSize: 24, fontWeight: FontWeight.w700, color: text),
+          displayMedium: TextStyle(fontFamily: _mono, fontSize: 22, fontWeight: FontWeight.w700, color: text),
+          headlineLarge: TextStyle(fontFamily: _mono, fontSize: 20, fontWeight: FontWeight.w700, color: text),
+          headlineMedium: TextStyle(fontFamily: _mono, fontSize: 18, fontWeight: FontWeight.w700, color: text),
+          headlineSmall: TextStyle(fontFamily: _mono, fontSize: 17, fontWeight: FontWeight.w600, color: text),
+          titleLarge: TextStyle(fontFamily: _mono, fontSize: 16, fontWeight: FontWeight.w600, color: text),
+          titleMedium: TextStyle(fontFamily: _mono, fontSize: 15, fontWeight: FontWeight.w600, color: text),
+          titleSmall: TextStyle(fontFamily: _mono, fontSize: 14, fontWeight: FontWeight.w600, color: text),
+          bodyLarge: TextStyle(fontFamily: _mono, fontSize: 14, color: textDim),
+          bodyMedium: TextStyle(fontFamily: _mono, fontSize: 13, color: textDim),
+          bodySmall: TextStyle(fontFamily: _mono, fontSize: 12, color: textFaint),
+          labelLarge: TextStyle(fontFamily: _mono, fontSize: 13, fontWeight: FontWeight.w700, color: text, letterSpacing: 0.5),
+          labelMedium: TextStyle(fontFamily: _mono, fontSize: 11, fontWeight: FontWeight.w600, color: textDim, letterSpacing: 0.5),
+          labelSmall: TextStyle(fontFamily: _mono, fontSize: 10, fontWeight: FontWeight.w500, color: textFaint, letterSpacing: 0.5),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: appBarBg,
@@ -58,17 +63,17 @@ class HyteraTheme {
           centerTitle: false,
           titleTextStyle: TextStyle(
             fontFamily: _mono,
-            fontSize: 9,
+            fontSize: 12,
             fontWeight: FontWeight.w700,
             color: activeBlue,
             letterSpacing: 0.5,
           ),
-          iconTheme: IconThemeData(color: activeBlue, size: 16),
+          iconTheme: IconThemeData(color: activeBlue, size: 18),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: panel,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4),
             borderSide: const BorderSide(color: line),
@@ -81,8 +86,8 @@ class HyteraTheme {
             borderRadius: BorderRadius.circular(4),
             borderSide: const BorderSide(color: activeBlue, width: 1.5),
           ),
-          labelStyle: const TextStyle(fontFamily: _mono, fontSize: 8, color: textFaint, letterSpacing: 0.5),
-          hintStyle: const TextStyle(fontFamily: _mono, fontSize: 9, color: textFaint),
+          labelStyle: const TextStyle(fontFamily: _mono, fontSize: 11, color: textFaint, letterSpacing: 0.5),
+          hintStyle: const TextStyle(fontFamily: _mono, fontSize: 12, color: textFaint),
           isDense: true,
         ),
         cardTheme: CardThemeData(
@@ -99,22 +104,22 @@ class HyteraTheme {
           thickness: 1,
           space: 0,
         ),
-        iconTheme: const IconThemeData(color: textDim, size: 14),
+        iconTheme: const IconThemeData(color: textDim, size: 16),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF1E4A8A),
             foregroundColor: text,
-            textStyle: const TextStyle(fontFamily: _mono, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1),
+            textStyle: const TextStyle(fontFamily: _mono, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            minimumSize: const Size(double.infinity, 32),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            minimumSize: const Size(double.infinity, 36),
           ),
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             foregroundColor: activeBlue,
-            textStyle: const TextStyle(fontFamily: _mono, fontSize: 8, fontWeight: FontWeight.w700),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            textStyle: const TextStyle(fontFamily: _mono, fontSize: 11, fontWeight: FontWeight.w700),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           ),
         ),
         switchTheme: SwitchThemeData(
@@ -138,7 +143,7 @@ class HyteraTheme {
         ),
         snackBarTheme: const SnackBarThemeData(
           backgroundColor: panel2,
-          contentTextStyle: TextStyle(fontFamily: _mono, fontSize: 10, color: text),
+          contentTextStyle: TextStyle(fontFamily: _mono, fontSize: 12, color: text),
         ),
       );
 }

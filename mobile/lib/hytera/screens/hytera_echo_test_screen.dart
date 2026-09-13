@@ -35,7 +35,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
             decoration: const BoxDecoration(
               color: Color(0xFF060C18),
               border: Border(
@@ -48,7 +48,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                   'ECHO TEST',
                   style: TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 9,
+                    fontSize: 13,
                     color: Color(0xFF4A9EFF),
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
@@ -74,8 +74,8 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 24,
-            height: 24,
+            width: 28,
+            height: 28,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               color: Color(0xFF4A9EFF),
@@ -86,7 +86,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
             'MENGHUBUNGKAN...',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 9,
+              fontSize: 12,
               color: Color(0xFF4A9EFF),
             ),
           ),
@@ -98,13 +98,13 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, size: 24, color: Color(0xFFEF4444)),
+          const Icon(Icons.error_outline, size: 28, color: Color(0xFFEF4444)),
           const SizedBox(height: 8),
           Text(
             echo.error ?? 'Gagal',
             style: const TextStyle(
               fontFamily: 'monospace',
-              fontSize: 8,
+              fontSize: 11,
               color: Color(0xFFEF4444),
             ),
             textAlign: TextAlign.center,
@@ -113,7 +113,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
           GestureDetector(
             onTap: () => ref.read(echoTestProvider.notifier).start(),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
                 color: const Color(0xFF0F1E2E),
                 borderRadius: BorderRadius.circular(4),
@@ -123,7 +123,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                 'COBA LAGI',
                 style: TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 8,
+                  fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF4A9EFF),
                 ),
@@ -139,8 +139,8 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 24,
-            height: 24,
+            width: 28,
+            height: 28,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               color: Color(0xFF4A9EFF),
@@ -151,7 +151,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
             'MEMULAI...',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 9,
+              fontSize: 12,
               color: Color(0xFF4A9EFF),
             ),
           ),
@@ -165,9 +165,9 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Latency — fixed height so button never shifts
+        // Latency
         SizedBox(
-          height: 38,
+          height: 52,
           child: echo.latencyMs != null
               ? Column(
                   mainAxisSize: MainAxisSize.min,
@@ -176,7 +176,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                       '${echo.latencyMs} ms',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 16,
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: _latencyColor(echo.latencyMs),
                       ),
@@ -186,7 +186,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                       'ROUND TRIP',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 7,
+                        fontSize: 10,
                         color: Color(0xFF2A4A6A),
                         letterSpacing: 0.5,
                       ),
@@ -208,8 +208,8 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
               ? null
               : () => ref.read(echoTestProvider.notifier).stopTransmit(),
           child: Container(
-            width: 70,
-            height: 70,
+            width: 76,
+            height: 76,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isTransmitting
@@ -232,7 +232,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                   : isPlaying
                       ? Icons.volume_up
                       : Icons.mic_none,
-              size: 22,
+              size: 26,
               color: isTransmitting
                   ? const Color(0xFF4ADE80)
                   : isPlaying
@@ -243,15 +243,15 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
         ),
         const SizedBox(height: 8),
 
-        // Duration — fixed height
+        // Duration
         SizedBox(
-          height: 20,
+          height: 28,
           child: isTransmitting
               ? TalkTimer(
                   isActive: true,
                   style: const TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 12,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF4ADE80),
                   ),
@@ -264,7 +264,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                           _fmtDuration(echo.transmitDuration),
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 10,
+                            fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF4ADE80),
                           ),
@@ -273,7 +273,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                           ' → ',
                           style: TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 10,
+                            fontSize: 13,
                             color: Color(0xFF4A6A8A),
                           ),
                         ),
@@ -281,7 +281,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                           _fmtDuration(echo.playbackDuration),
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 10,
+                            fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFFFBBF24),
                           ),
@@ -292,9 +292,9 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
         ),
         const SizedBox(height: 4),
 
-        // Status text — fixed height
+        // Status text
         SizedBox(
-          height: 14,
+          height: 24,
           child: Text(
             isTransmitting
                 ? 'Bicara sekarang...'
@@ -303,7 +303,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                     : 'Tekan & tahan untuk bicara',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 8,
+              fontSize: 11,
               color: isTransmitting
                   ? const Color(0xFF4ADE80)
                   : isPlaying

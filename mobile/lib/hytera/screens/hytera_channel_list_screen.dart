@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -67,43 +68,43 @@ class _HyteraChannelListScreenState
           side: const BorderSide(color: Color(0xFF1E3A5F)),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(14),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.lock, size: 11, color: Color(0xFF4A9EFF)),
-                  const SizedBox(width: 4),
+                  const Icon(Icons.lock, size: 14, color: Color(0xFF4A9EFF)),
+                  const SizedBox(width: 5),
                   Text(
                     'Channel Privat',
                     style: const TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 9,
+                      fontSize: 12,
                       color: Color(0xFF4A9EFF),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 3),
               Text(
                 channel.name,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 7,
+                  fontSize: 10,
                   color: Color(0xFF4A6A8A),
                 ),
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: 8),
               TextField(
                 controller: controller,
                 obscureText: true,
                 autofocus: true,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 9,
+                  fontSize: 12,
                   color: Color(0xFF94A3B8),
                   letterSpacing: 2,
                 ),
@@ -111,13 +112,13 @@ class _HyteraChannelListScreenState
                   hintText: '••••••',
                   hintStyle: const TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 9,
+                    fontSize: 12,
                     color: Color(0xFF2A4A6A),
                   ),
                   filled: true,
                   fillColor: const Color(0xFF060910),
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 7, vertical: 5),
+                      horizontal: 8, vertical: 8),
                   isDense: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(4),
@@ -136,7 +137,7 @@ class _HyteraChannelListScreenState
                   ),
                 ),
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -146,7 +147,7 @@ class _HyteraChannelListScreenState
                         foregroundColor: const Color(0xFF4A6A8A),
                         side:
                             const BorderSide(color: Color(0xFF1E2A3A)),
-                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        padding: const EdgeInsets.symmetric(vertical: 7),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -155,13 +156,13 @@ class _HyteraChannelListScreenState
                         'BATAL',
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 8,
+                          fontSize: 11,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () =>
@@ -171,7 +172,7 @@ class _HyteraChannelListScreenState
                         backgroundColor: const Color(0xFF0F1E2E),
                         side:
                             const BorderSide(color: Color(0xFF1E5A2A)),
-                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        padding: const EdgeInsets.symmetric(vertical: 7),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -180,7 +181,7 @@ class _HyteraChannelListScreenState
                         'JOIN',
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 8,
+                          fontSize: 11,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -215,7 +216,7 @@ class _HyteraChannelListScreenState
             Container(
               color: const Color(0xFF060C18),
               padding:
-                  const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
               child: Row(
                 children: [
                   GestureDetector(
@@ -224,13 +225,13 @@ class _HyteraChannelListScreenState
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.arrow_back,
-                            size: 11, color: Color(0xFF4A9EFF)),
-                        SizedBox(width: 3),
+                            size: 14, color: Color(0xFF4A9EFF)),
+                        SizedBox(width: 4),
                         Text(
                           'KEMBALI',
                           style: TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 7,
+                            fontSize: 10,
                             color: Color(0xFF4A9EFF),
                             fontWeight: FontWeight.w700,
                           ),
@@ -243,7 +244,7 @@ class _HyteraChannelListScreenState
                     'DAFTAR CHANNEL',
                     style: TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 9,
+                      fontSize: 13,
                       color: Color(0xFF4A9EFF),
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
@@ -258,7 +259,7 @@ class _HyteraChannelListScreenState
               margin: const EdgeInsets.symmetric(
                   horizontal: 9, vertical: 6),
               padding: const EdgeInsets.symmetric(
-                  horizontal: 7, vertical: 4),
+                  horizontal: 8, vertical: 5),
               decoration: BoxDecoration(
                 color: const Color(0xFF060910),
                 borderRadius: BorderRadius.circular(4),
@@ -267,8 +268,8 @@ class _HyteraChannelListScreenState
               child: Row(
                 children: [
                   const Icon(Icons.search,
-                      size: 10, color: Color(0xFF4A6A8A)),
-                  const SizedBox(width: 5),
+                      size: 14, color: Color(0xFF4A6A8A)),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: TextField(
                       controller: _searchController,
@@ -276,14 +277,14 @@ class _HyteraChannelListScreenState
                           setState(() => _searchQuery = v),
                       style: const TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 8,
+                        fontSize: 12,
                         color: Color(0xFFDBE4F0),
                       ),
                       decoration: const InputDecoration.collapsed(
                         hintText: 'Cari channel...',
                         hintStyle: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 8,
+                          fontSize: 11,
                           color: Color(0xFF2A4A6A),
                         ),
                       ),
@@ -298,10 +299,10 @@ class _HyteraChannelListScreenState
               child: state.isLoading
                   ? const Center(
                       child: SizedBox(
-                        width: 16,
-                        height: 16,
+                        width: 20,
+                        height: 20,
                         child: CircularProgressIndicator(
-                          strokeWidth: 1.5,
+                          strokeWidth: 2,
                           color: Color(0xFF4A9EFF),
                         ),
                       ),
@@ -327,7 +328,7 @@ class _HyteraChannelListScreenState
   }
 }
 
-class _ChannelItem extends StatelessWidget {
+class _ChannelItem extends StatefulWidget {
   final Channel channel;
   final bool isCurrent;
   final VoidCallback onTap;
@@ -339,88 +340,115 @@ class _ChannelItem extends StatelessWidget {
   });
 
   @override
+  State<_ChannelItem> createState() => _ChannelItemState();
+}
+
+class _ChannelItemState extends State<_ChannelItem> {
+  bool _focused = false;
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-        decoration: BoxDecoration(
-          color: isCurrent ? const Color(0xFF0A1628) : Colors.transparent,
-          border: const Border(
-            bottom: BorderSide(color: Color(0xFF0A1020)),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.cell_tower,
-              size: 13,
-              color: isCurrent
-                  ? const Color(0xFF4A9EFF)
-                  : const Color(0xFF1E4A8A),
+    return Focus(
+      onFocusChange: (f) => setState(() => _focused = f),
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            (event.logicalKey == LogicalKeyboardKey.select ||
+                event.logicalKey == LogicalKeyboardKey.enter ||
+                event.logicalKey == LogicalKeyboardKey.gameButtonA)) {
+          widget.onTap();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+          decoration: BoxDecoration(
+            color: _focused
+                ? const Color(0xFF0F1E2E)
+                : widget.isCurrent
+                    ? const Color(0xFF0A1628)
+                    : Colors.transparent,
+            border: Border(
+              bottom: const BorderSide(color: Color(0xFF0A1020)),
+              left: _focused
+                  ? const BorderSide(color: Color(0xFF4A9EFF), width: 3)
+                  : BorderSide.none,
             ),
-            const SizedBox(width: 7),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.cell_tower,
+                size: 16,
+                color: _focused || widget.isCurrent
+                    ? const Color(0xFF4A9EFF)
+                    : const Color(0xFF1E4A8A),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.channel.name,
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _focused || widget.isCurrent
+                            ? const Color(0xFF4A9EFF)
+                            : const Color(0xFF94A3B8),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        _Badge(
+                          text: 'IDLE',
+                          bgColor: const Color(0xFF0F1E2E),
+                          textColor: const Color(0xFF2A4A6A),
+                        ),
+                        if (widget.channel.isPrivate) ...[
+                          const SizedBox(width: 4),
+                          _Badge(
+                            text: 'PRIVAT',
+                            bgColor: const Color(0xFF1A1A08),
+                            textColor: const Color(0xFFA07A10),
+                            borderColor: const Color(0xFF3A3008),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    channel.name,
+                    '${widget.channel.memberCount}',
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF4A6A8A),
+                    ),
+                  ),
+                  const Text(
+                    'online',
                     style: TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      color: isCurrent
-                          ? const Color(0xFF4A9EFF)
-                          : const Color(0xFF94A3B8),
+                      fontSize: 9,
+                      color: Color(0xFF2A4A6A),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      _Badge(
-                        text: 'IDLE',
-                        bgColor: const Color(0xFF0F1E2E),
-                        textColor: const Color(0xFF2A4A6A),
-                      ),
-                      if (channel.isPrivate) ...[
-                        const SizedBox(width: 3),
-                        _Badge(
-                          text: 'PRIVAT',
-                          bgColor: const Color(0xFF1A1A08),
-                          textColor: const Color(0xFFA07A10),
-                          borderColor: const Color(0xFF3A3008),
-                        ),
-                      ],
-                    ],
                   ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${channel.memberCount}',
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 8,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF4A6A8A),
-                  ),
-                ),
-                const Text(
-                  'online',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 6.5,
-                    color: Color(0xFF2A4A6A),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -443,7 +471,7 @@ class _Badge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(2),
@@ -455,7 +483,7 @@ class _Badge extends StatelessWidget {
         text,
         style: TextStyle(
           fontFamily: 'monospace',
-          fontSize: 6.5,
+          fontSize: 9,
           fontWeight: FontWeight.w600,
           color: textColor,
         ),

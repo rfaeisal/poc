@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class HyteraChannelFrame extends StatelessWidget {
+class HyteraChannelFrame extends StatefulWidget {
   final String channelName;
   final int memberCount;
   final int channelIndex;
@@ -15,6 +16,13 @@ class HyteraChannelFrame extends StatelessWidget {
     this.totalChannels = 1,
     this.onChannelListTap,
   });
+
+  @override
+  State<HyteraChannelFrame> createState() => _HyteraChannelFrameState();
+}
+
+class _HyteraChannelFrameState extends State<HyteraChannelFrame> {
+  bool _buttonFocused = false;
 
   @override
   Widget build(BuildContext context) {
@@ -35,44 +43,65 @@ class HyteraChannelFrame extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'FRAME DETAIL CHANNEL',
+                'CHANNEL',
                 style: TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 8,
+                  fontSize: 10,
                   color: Color(0xFF4A6A8A),
                   letterSpacing: 0.5,
                 ),
               ),
-              GestureDetector(
-                onTap: onChannelListTap,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F1E2E),
-                    border: Border.all(
-                        color: const Color(0xFF1E3A5F), width: 1),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  child: const Text(
-                    '☰ CH LIST',
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 7,
-                      color: Color(0xFF4A9EFF),
-                      fontWeight: FontWeight.w700,
+              Focus(
+                onFocusChange: (f) => setState(() => _buttonFocused = f),
+                onKeyEvent: (node, event) {
+                  if (event is KeyDownEvent &&
+                      widget.onChannelListTap != null &&
+                      (event.logicalKey == LogicalKeyboardKey.select ||
+                          event.logicalKey == LogicalKeyboardKey.enter ||
+                          event.logicalKey ==
+                              LogicalKeyboardKey.gameButtonA)) {
+                    widget.onChannelListTap!();
+                    return KeyEventResult.handled;
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: GestureDetector(
+                  onTap: widget.onChannelListTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _buttonFocused
+                          ? const Color(0xFF1A3A5F)
+                          : const Color(0xFF0F1E2E),
+                      border: Border.all(
+                        color: _buttonFocused
+                            ? const Color(0xFF4A9EFF)
+                            : const Color(0xFF1E3A5F),
+                        width: _buttonFocused ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: const Text(
+                      '☰ CH LIST',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 10,
+                        color: Color(0xFF4A9EFF),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           Text(
-            channelName,
+            widget.channelName,
             style: const TextStyle(
               fontFamily: 'monospace',
-              fontSize: 11,
+              fontSize: 15,
               color: Color(0xFFE2E8F0),
               fontWeight: FontWeight.w700,
               letterSpacing: 0.3,
@@ -81,15 +110,15 @@ class HyteraChannelFrame extends StatelessWidget {
           const SizedBox(height: 2),
           Text.rich(
             TextSpan(
-              text: 'ANGGOTA AKTIF : ',
+              text: 'AKTIF : ',
               style: const TextStyle(
                 fontFamily: 'monospace',
-                fontSize: 9,
+                fontSize: 11,
                 color: Color(0xFF64748B),
               ),
               children: [
                 TextSpan(
-                  text: '$memberCount Personel',
+                  text: '${widget.memberCount} Personel',
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF94A3B8),
@@ -101,19 +130,19 @@ class HyteraChannelFrame extends StatelessWidget {
           const SizedBox(height: 3),
           Row(
             children: List.generate(
-              totalChannels.clamp(1, 5),
+              widget.totalChannels.clamp(1, 5),
               (i) => Padding(
                 padding: const EdgeInsets.only(right: 3),
                 child: Container(
-                  width: 5,
-                  height: 5,
+                  width: 6,
+                  height: 6,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: i == channelIndex
+                    color: i == widget.channelIndex
                         ? const Color(0xFF1E5A9A)
                         : const Color(0xFF0F2040),
                     border: Border.all(
-                      color: i == channelIndex
+                      color: i == widget.channelIndex
                           ? const Color(0xFF4A9EFF)
                           : const Color(0xFF1E3A5F),
                       width: 1,

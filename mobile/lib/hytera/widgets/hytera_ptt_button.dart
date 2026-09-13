@@ -78,8 +78,8 @@ class HyteraPttButton extends ConsumerWidget {
                     notifier.stopTransmit();
                   },
             child: Container(
-              width: 70,
-              height: 70,
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: bgColor,
@@ -88,13 +88,13 @@ class HyteraPttButton extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.mic, size: 18, color: iconColor),
+                  Icon(Icons.mic, size: 22, color: iconColor),
                   const SizedBox(height: 1),
                   Text(
                     label,
                     style: TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 7,
+                      fontSize: 10,
                       color: ptt.isTransmitting
                           ? const Color(0xFFEF4444)
                           : const Color(0xFF4A6A8A),
@@ -106,7 +106,7 @@ class HyteraPttButton extends ConsumerWidget {
                       subLabel,
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 6,
+                        fontSize: 8,
                         color: ptt.isTransmitting
                             ? const Color(0xFFEF4444)
                             : const Color(0xFF4A6A8A),
@@ -118,12 +118,12 @@ class HyteraPttButton extends ConsumerWidget {
           ),
         ),
         if (isIdle) ...[
-          const SizedBox(height: 4),
+          const SizedBox(height: 5),
           const Text(
-            'Tahan bicara · tahan >2dtk lock',
+            'Tahan bicara · >2dtk lock',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 6.5,
+              fontSize: 9,
               color: Color(0xFF2A4A6A),
             ),
           ),

@@ -19,7 +19,14 @@ class HyteraApp extends ConsumerWidget {
       theme: HyteraTheme.dark,
       themeMode: ThemeMode.dark,
       routerConfig: hyteraRouter,
-      builder: (context, child) => ConnectivityBanner(child: child!),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(1.5),
+          ),
+          child: ConnectivityBanner(child: child!),
+        );
+      },
     );
   }
 }

@@ -23,13 +23,13 @@ class HyteraToggleBar extends ConsumerWidget {
           isOn: voxOn,
           onTap: () => notifier.setVoxEnabled(!voxOn),
         ),
-        const SizedBox(width: 5),
+        const SizedBox(width: 6),
         _ToggleChip(
           label: 'BT',
           isOn: btOn,
           onTap: null,
         ),
-        const SizedBox(width: 5),
+        const SizedBox(width: 6),
         _ToggleChip(
           label: 'ENC',
           isOn: encOn,
@@ -56,7 +56,7 @@ class _ToggleChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
         decoration: BoxDecoration(
           border: Border.all(
             color: isOn
@@ -70,7 +70,7 @@ class _ToggleChip extends StatelessWidget {
           label,
           style: TextStyle(
             fontFamily: 'monospace',
-            fontSize: 7,
+            fontSize: 10,
             color: isOn
                 ? const Color(0xFF4ADE80)
                 : const Color(0xFF4A6A8A),

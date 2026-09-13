@@ -23,12 +23,12 @@ class HyteraPengaturanScreen extends ConsumerWidget {
         // Header
         Container(
           color: const Color(0xFF060C18),
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
           child: const Text(
             'PENGATURAN',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 9,
+              fontSize: 13,
               color: Color(0xFF4A9EFF),
               fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
@@ -38,13 +38,13 @@ class HyteraPengaturanScreen extends ConsumerWidget {
 
         // DIAGNOSTIK
         _SectionHeader(title: 'DIAGNOSTIK'),
-        _SettingItem(
+        _FocusableSettingItem(
           icon: Icons.surround_sound,
           name: 'Echo Test',
           description: 'Test mic & speaker, ukur latency',
           trailing: const Icon(
             Icons.chevron_right,
-            size: 14,
+            size: 18,
             color: Color(0xFF4A6A8A),
           ),
           onTap: () => context.go('/echo-test'),
@@ -52,7 +52,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
 
         // AUDIO
         _SectionHeader(title: 'AUDIO'),
-        _SettingItem(
+        _FocusableSettingItem(
           icon: Icons.volume_up,
           name: 'RX Gain',
           description: 'Volume suara masuk',
@@ -60,7 +60,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             _gainLabel(settings.speakerGain),
             style: const TextStyle(
               fontFamily: 'monospace',
-              fontSize: 8,
+              fontSize: 11,
               color: Color(0xFF4A9EFF),
             ),
           ),
@@ -72,7 +72,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
           minLabel: '-10 dB',
           maxLabel: '+10 dB',
         ),
-        _SettingItem(
+        _FocusableSettingItem(
           icon: Icons.mic,
           name: 'TX Gain',
           description: 'Volume mikrofon',
@@ -80,7 +80,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             _gainLabel(settings.micGain),
             style: const TextStyle(
               fontFamily: 'monospace',
-              fontSize: 8,
+              fontSize: 11,
               color: Color(0xFF4A9EFF),
             ),
           ),
@@ -104,10 +104,10 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             ),
           ),
           child: const Text(
-            'Ketuk badge → tekan tombol fisik untuk set. Tahan lama badge untuk hapus.',
+            'Ketuk badge → tekan tombol fisik untuk set. Tahan lama untuk hapus.',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 6.5,
+              fontSize: 9,
               color: Color(0xFF2A4A6A),
               height: 1.4,
             ),
@@ -134,7 +134,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
 
         // VOX
         _SectionHeader(title: 'VOX'),
-        _ToggleItem(
+        _FocusableToggleItem(
           icon: Icons.graphic_eq,
           name: 'VOX',
           description: 'Transmit otomatis oleh suara',
@@ -145,7 +145,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
 
         // LOKASI
         _SectionHeader(title: 'LOKASI'),
-        _ToggleItem(
+        _FocusableToggleItem(
           icon: Icons.location_on,
           name: 'Share Location',
           description: 'Tampilkan posisi di peta',
@@ -156,7 +156,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
 
         // BLUETOOTH
         _SectionHeader(title: 'BLUETOOTH'),
-        _SettingItem(
+        _FocusableSettingItem(
           icon: Icons.bluetooth,
           name: 'Bluetooth PTT',
           description: settings.bluetoothDeviceName ?? 'Tidak terhubung',
@@ -165,8 +165,8 @@ class HyteraPengaturanScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 5,
-                      height: 5,
+                      width: 6,
+                      height: 6,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Color(0xFF4ADE80),
@@ -177,7 +177,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
                       'Terhubung',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 8,
+                        fontSize: 10,
                         color: Color(0xFF4ADE80),
                       ),
                     ),
@@ -188,12 +188,12 @@ class HyteraPengaturanScreen extends ConsumerWidget {
 
         // AKUN
         _SectionHeader(title: 'AKUN'),
-        _SettingItem(
+        _FocusableSettingItem(
           icon: Icons.grid_view,
           name: 'Device Info',
           description: 'Diagnostics & debug info',
         ),
-        _SettingItem(
+        _FocusableSettingItem(
           icon: Icons.logout,
           name: 'Logout',
           description:
@@ -207,7 +207,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
 
         const SizedBox(height: 8),
         _SectionHeader(title: 'APLIKASI'),
-        _SettingItem(
+        _FocusableSettingItem(
           icon: Icons.exit_to_app,
           name: 'Keluar Aplikasi',
           description: 'Tutup aplikasi sepenuhnya',
@@ -230,7 +230,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 7,
+                  fontSize: 10,
                   color: Color(0xFF1E3A5F),
                 ),
               ),
@@ -251,7 +251,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
           'KELUAR APLIKASI',
           style: TextStyle(
             fontFamily: 'monospace',
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
             color: Color(0xFFE2E8F0),
           ),
@@ -260,7 +260,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
           'Aplikasi akan ditutup sepenuhnya. PTT tidak akan aktif sampai aplikasi dibuka kembali.',
           style: TextStyle(
             fontFamily: 'monospace',
-            fontSize: 9,
+            fontSize: 12,
             color: Color(0xFF94A3B8),
             height: 1.4,
           ),
@@ -272,7 +272,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
               'BATAL',
               style: TextStyle(
                 fontFamily: 'monospace',
-                fontSize: 9,
+                fontSize: 12,
                 color: Color(0xFF4A9EFF),
               ),
             ),
@@ -286,7 +286,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
               'KELUAR',
               style: TextStyle(
                 fontFamily: 'monospace',
-                fontSize: 9,
+                fontSize: 12,
                 color: Color(0xFFEF4444),
               ),
             ),
@@ -320,7 +320,7 @@ class _SectionHeader extends StatelessWidget {
         title,
         style: const TextStyle(
           fontFamily: 'monospace',
-          fontSize: 7,
+          fontSize: 10,
           color: Color(0xFF2A4A6A),
           letterSpacing: 0.8,
         ),
@@ -329,7 +329,7 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _SettingItem extends StatelessWidget {
+class _FocusableSettingItem extends StatefulWidget {
   final IconData icon;
   final String name;
   final String description;
@@ -337,7 +337,7 @@ class _SettingItem extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isDestructive;
 
-  const _SettingItem({
+  const _FocusableSettingItem({
     required this.icon,
     required this.name,
     required this.description,
@@ -347,79 +347,106 @@ class _SettingItem extends StatelessWidget {
   });
 
   @override
+  State<_FocusableSettingItem> createState() => _FocusableSettingItemState();
+}
+
+class _FocusableSettingItemState extends State<_FocusableSettingItem> {
+  bool _focused = false;
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Color(0xFF0A1020)),
+    return Focus(
+      onFocusChange: (f) => setState(() => _focused = f),
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            widget.onTap != null &&
+            (event.logicalKey == LogicalKeyboardKey.select ||
+                event.logicalKey == LogicalKeyboardKey.enter ||
+                event.logicalKey == LogicalKeyboardKey.gameButtonA)) {
+          widget.onTap!();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+          decoration: BoxDecoration(
+            color: _focused ? const Color(0xFF0F1E2E) : Colors.transparent,
+            border: Border(
+              bottom: const BorderSide(color: Color(0xFF0A1020)),
+              left: _focused
+                  ? const BorderSide(color: Color(0xFF4A9EFF), width: 3)
+                  : BorderSide.none,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: isDestructive
-                    ? const Color(0xFF1A0808)
-                    : const Color(0xFF0F1E2E),
-                borderRadius: BorderRadius.circular(4),
+          child: Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: widget.isDestructive
+                      ? const Color(0xFF1A0808)
+                      : const Color(0xFF0F1E2E),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(
+                  widget.icon,
+                  size: 14,
+                  color: widget.isDestructive
+                      ? const Color(0xFFF87171)
+                      : const Color(0xFF4A9EFF),
+                ),
               ),
-              child: Icon(
-                icon,
-                size: 11,
-                color: isDestructive
-                    ? const Color(0xFFF87171)
-                    : const Color(0xFF4A9EFF),
-              ),
-            ),
-            const SizedBox(width: 7),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: isDestructive
-                          ? const Color(0xFFF87171)
-                          : const Color(0xFF94A3B8),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.name,
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _focused
+                            ? const Color(0xFFDBE4F0)
+                            : widget.isDestructive
+                                ? const Color(0xFFF87171)
+                                : const Color(0xFF94A3B8),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    description,
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 7,
-                      color: Color(0xFF2A4A6A),
+                    const SizedBox(height: 1),
+                    Text(
+                      widget.description,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 10,
+                        color: Color(0xFF2A4A6A),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            ?trailing,
-          ],
+              ?widget.trailing,
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _ToggleItem extends StatelessWidget {
+class _FocusableToggleItem extends StatefulWidget {
   final IconData icon;
   final String name;
   final String description;
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const _ToggleItem({
+  const _FocusableToggleItem({
     required this.icon,
     required this.name,
     required this.description,
@@ -428,86 +455,114 @@ class _ToggleItem extends StatelessWidget {
   });
 
   @override
+  State<_FocusableToggleItem> createState() => _FocusableToggleItemState();
+}
+
+class _FocusableToggleItemState extends State<_FocusableToggleItem> {
+  bool _focused = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xFF0A1020)),
+    return Focus(
+      onFocusChange: (f) => setState(() => _focused = f),
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            (event.logicalKey == LogicalKeyboardKey.select ||
+                event.logicalKey == LogicalKeyboardKey.enter ||
+                event.logicalKey == LogicalKeyboardKey.gameButtonA)) {
+          widget.onChanged(!widget.value);
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: GestureDetector(
+        onTap: () => widget.onChanged(!widget.value),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+          decoration: BoxDecoration(
+            color: _focused ? const Color(0xFF0F1E2E) : Colors.transparent,
+            border: Border(
+              bottom: const BorderSide(color: Color(0xFF0A1020)),
+              left: _focused
+                  ? const BorderSide(color: Color(0xFF4A9EFF), width: 3)
+                  : BorderSide.none,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F1E2E),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(widget.icon, size: 14,
+                    color: const Color(0xFF4A9EFF)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.name,
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _focused
+                            ? const Color(0xFFDBE4F0)
+                            : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      widget.description,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 10,
+                        color: Color(0xFF2A4A6A),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 28,
+                height: 16,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: widget.value
+                      ? const Color(0xFF0F6E56)
+                      : const Color(0xFF0F2040),
+                  border: Border.all(
+                    color: widget.value
+                        ? const Color(0xFF1D9E75)
+                        : const Color(0xFF1E3A5F),
+                  ),
+                ),
+                child: AnimatedAlign(
+                  duration: const Duration(milliseconds: 150),
+                  alignment: widget.value
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: widget.value
+                          ? const Color(0xFF4ADE80)
+                          : const Color(0xFF2A4A6A),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F1E2E),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Icon(icon, size: 11, color: const Color(0xFF4A9EFF)),
-          ),
-          const SizedBox(width: 7),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF94A3B8),
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 7,
-                    color: Color(0xFF2A4A6A),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: () => onChanged(!value),
-            child: Container(
-              width: 22,
-              height: 12,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                color: value
-                    ? const Color(0xFF0F6E56)
-                    : const Color(0xFF0F2040),
-                border: Border.all(
-                  color: value
-                      ? const Color(0xFF1D9E75)
-                      : const Color(0xFF1E3A5F),
-                ),
-              ),
-              child: AnimatedAlign(
-                duration: const Duration(milliseconds: 150),
-                alignment:
-                    value ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 1),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: value
-                        ? const Color(0xFF4ADE80)
-                        : const Color(0xFF2A4A6A),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -532,6 +587,7 @@ class _KeyMappingItem extends ConsumerStatefulWidget {
 
 class _KeyMappingItemState extends ConsumerState<_KeyMappingItem> {
   bool _listening = false;
+  bool _focused = false;
   Timer? _listenTimer;
 
   void _startListening() {
@@ -582,90 +638,112 @@ class _KeyMappingItemState extends ConsumerState<_KeyMappingItem> {
     final label = bindings.labelFor(widget.action);
     final hasBinding = bindings.keyFor(widget.action) != null;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xFF0A1020)),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F1E2E),
-              borderRadius: BorderRadius.circular(4),
+    return Focus(
+      onFocusChange: (f) => setState(() => _focused = f),
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            !_listening &&
+            (event.logicalKey == LogicalKeyboardKey.select ||
+                event.logicalKey == LogicalKeyboardKey.enter ||
+                event.logicalKey == LogicalKeyboardKey.gameButtonA)) {
+          _startListening();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: GestureDetector(
+        onTap: _listening ? null : _startListening,
+        onLongPress: hasBinding ? _clearBinding : null,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+          decoration: BoxDecoration(
+            color: _focused ? const Color(0xFF0F1E2E) : Colors.transparent,
+            border: Border(
+              bottom: const BorderSide(color: Color(0xFF0A1020)),
+              left: _focused
+                  ? const BorderSide(color: Color(0xFF4A9EFF), width: 3)
+                  : BorderSide.none,
             ),
-            child: Icon(widget.icon, size: 11, color: const Color(0xFF4A9EFF)),
           ),
-          const SizedBox(width: 7),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.name,
-                  style: const TextStyle(
+          child: Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F1E2E),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(widget.icon, size: 14,
+                    color: const Color(0xFF4A9EFF)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.name,
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _focused
+                            ? const Color(0xFFDBE4F0)
+                            : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      widget.description,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 10,
+                        color: Color(0xFF2A4A6A),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                constraints: const BoxConstraints(minWidth: 44),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _listening
+                      ? const Color(0xFF1A1500)
+                      : const Color(0xFF0F1E2E),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: _listening
+                        ? const Color(0xFFFBBF24)
+                        : hasBinding
+                            ? const Color(0xFF1E4A8A)
+                            : const Color(0xFF1E3A5F),
+                  ),
+                ),
+                child: Text(
+                  _listening
+                      ? 'TEKAN...'
+                      : hasBinding
+                          ? label
+                          : '---',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 9,
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF94A3B8),
+                    color: _listening
+                        ? const Color(0xFFFBBF24)
+                        : hasBinding
+                            ? const Color(0xFF4A9EFF)
+                            : const Color(0xFF2A4A6A),
                   ),
                 ),
-                const SizedBox(height: 1),
-                Text(
-                  widget.description,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 7,
-                    color: Color(0xFF2A4A6A),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: _listening ? null : _startListening,
-            onLongPress: hasBinding ? _clearBinding : null,
-            child: Container(
-              constraints: const BoxConstraints(minWidth: 40),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: _listening
-                    ? const Color(0xFF1A1500)
-                    : const Color(0xFF0F1E2E),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: _listening
-                      ? const Color(0xFFFBBF24)
-                      : hasBinding
-                          ? const Color(0xFF1E4A8A)
-                          : const Color(0xFF1E3A5F),
-                ),
               ),
-              child: Text(
-                _listening
-                    ? 'TEKAN...'
-                    : hasBinding
-                        ? label
-                        : '---',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 8,
-                  fontWeight: FontWeight.w700,
-                  color: _listening
-                      ? const Color(0xFFFBBF24)
-                      : hasBinding
-                          ? const Color(0xFF4A9EFF)
-                          : const Color(0xFF2A4A6A),
-                ),
-              ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -703,7 +781,7 @@ class _SliderRow extends StatelessWidget {
                 minLabel,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 7,
+                  fontSize: 10,
                   color: Color(0xFF2A4A6A),
                 ),
               ),
@@ -711,7 +789,7 @@ class _SliderRow extends StatelessWidget {
                 maxLabel,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 7,
+                  fontSize: 10,
                   color: Color(0xFF4A9EFF),
                 ),
               ),
@@ -723,8 +801,8 @@ class _SliderRow extends StatelessWidget {
               inactiveTrackColor: const Color(0xFF0F2040),
               thumbColor: const Color(0xFF4A9EFF),
               thumbShape:
-                  const RoundSliderThumbShape(enabledThumbRadius: 5),
-              trackHeight: 2,
+                  const RoundSliderThumbShape(enabledThumbRadius: 6),
+              trackHeight: 3,
               overlayShape: SliderComponentShape.noOverlay,
             ),
             child: Slider(
@@ -737,4 +815,3 @@ class _SliderRow extends StatelessWidget {
     );
   }
 }
-

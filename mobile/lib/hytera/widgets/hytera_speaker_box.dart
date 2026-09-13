@@ -90,14 +90,14 @@ class HyteraSpeakerBox extends ConsumerWidget {
     final connStatus = ptt.connectionStatus;
 
     return Container(
-      constraints: const BoxConstraints(minHeight: 64),
+      constraints: const BoxConstraints(minHeight: 80),
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
       color: bgColor,
       child: Row(
         children: [
           Container(
-            width: 32,
-            height: 42,
+            width: 36,
+            height: 46,
             decoration: BoxDecoration(
               color: bgColor == const Color(0xFF080D18)
                   ? const Color(0xFF0F2040)
@@ -107,7 +107,7 @@ class HyteraSpeakerBox extends ConsumerWidget {
             ),
             child: Icon(
               Icons.person,
-              size: 16,
+              size: 20,
               color: isRx
                   ? const Color(0xFF4ADE80)
                   : (isTx || isLocked)
@@ -115,7 +115,7 @@ class HyteraSpeakerBox extends ConsumerWidget {
                       : const Color(0xFF2A5A8A),
             ),
           ),
-          const SizedBox(width: 7),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +125,7 @@ class HyteraSpeakerBox extends ConsumerWidget {
                   'CALLSIGN',
                   style: TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 8,
+                    fontSize: 10,
                     color: Color(0xFF4A6A8A),
                     letterSpacing: 0.5,
                   ),
@@ -134,7 +134,7 @@ class HyteraSpeakerBox extends ConsumerWidget {
                   callsign,
                   style: TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 12,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1,
                     color: callsignColor,
@@ -145,7 +145,7 @@ class HyteraSpeakerBox extends ConsumerWidget {
                     speakerName,
                     style: const TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 7,
+                      fontSize: 10,
                       color: Color(0xFF4A6A8A),
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -155,7 +155,7 @@ class HyteraSpeakerBox extends ConsumerWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
+                          horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
                         color: badgeBg,
                         border: isActive
@@ -170,7 +170,7 @@ class HyteraSpeakerBox extends ConsumerWidget {
                         badgeText,
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 7,
+                          fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: badgeColor,
                           letterSpacing: 0.3,
@@ -178,12 +178,12 @@ class HyteraSpeakerBox extends ConsumerWidget {
                       ),
                     ),
                     if (isActive) ...[
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 5),
                       TalkTimer(
                         isActive: true,
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 10,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
                           color: isRx
@@ -198,8 +198,8 @@ class HyteraSpeakerBox extends ConsumerWidget {
                 Row(
                   children: [
                     Container(
-                      width: 4,
-                      height: 4,
+                      width: 5,
+                      height: 5,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: connStatus == ConnectionStatus.connected
@@ -218,7 +218,7 @@ class HyteraSpeakerBox extends ConsumerWidget {
                               : 'Disconnected',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 7,
+                        fontSize: 10,
                         color: connStatus == ConnectionStatus.connected
                             ? const Color(0xFF4A8A6A)
                             : connStatus == ConnectionStatus.connecting

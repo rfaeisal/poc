@@ -73,6 +73,9 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) KioskService.exitApp();
+      },
       child: Scaffold(
         backgroundColor: const Color(0xFF0B0F1A),
         body: FocusScope(

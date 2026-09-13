@@ -92,7 +92,7 @@ class _HyteraStatusBarState extends State<HyteraStatusBar> {
                 : const Color(0xFFEF4444);
 
     return Container(
-      height: 20,
+      height: 34,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: const BoxDecoration(
         color: Color(0xFF060910),
@@ -104,7 +104,7 @@ class _HyteraStatusBarState extends State<HyteraStatusBar> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _StatusItem(
-            text: _signalDbm != null ? '📶 $_signalDbm dBm' : '📶 -- dBm',
+            text: _signalDbm != null ? '📶 $_signalDbm dBm' : '📶 --',
             color: _signalDbm == null
                 ? const Color(0xFF516079)
                 : _signalDbm! > -80
@@ -148,7 +148,7 @@ class _StatusItem extends StatelessWidget {
           text,
           style: TextStyle(
             fontFamily: 'monospace',
-            fontSize: 9,
+            fontSize: 11,
             fontWeight: FontWeight.w500,
             color: color,
           ),
