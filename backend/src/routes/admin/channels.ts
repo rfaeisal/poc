@@ -13,6 +13,11 @@ const updateSchema = z.object({
   isPrivate: z.boolean().optional(),
 });
 
+const addMemberSchema = z.object({
+  userId: z.string().uuid(),
+  role: z.enum(['MEMBER', 'MODERATOR', 'ADMIN']).default('MEMBER'),
+});
+
 export async function channelsRoute(fastify: FastifyInstance) {
   // Admin update channel (bypasses membership check)
   fastify.patch<{ Params: { id: string } }>(
@@ -38,6 +43,75 @@ export async function channelsRoute(fastify: FastifyInstance) {
       });
 
       return { channel: updated };
+    }
+  );
+
+  // Admin add member to channel
+  fastify.post<{ Params: { id: string } }>(
+    '/channels/:id/members',
+    { preHandler: [authenticate, authorize('ADMIN')] },
+    async (request, reply) => {
+      const { userId, role } = addMemberSchema.parse(request.body);
+
+      const channel = await prisma.channel.findUnique({ where: { id: request.params.id } });
+      if (!channel) {
+        reply.code(404).send({ error: 'Channel not found' });
+        return;
+      }
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        reply.code(404).send({ error: 'User not found' });
+        return;
+      }
+
+      const existing = await prisma.channelMember.findUnique({
+        where: { channelId_userId: { channelId: request.params.id, userId } },
+      });
+      if (existing) {
+        reply.code(409).send({ error: 'User already a member' });
+        return;
+      }
+
+      const memberCount = await prisma.channelMember.count({ where: { channelId: request.params.id } });
+      if (memberCount >= channel.maxMembers) {
+        reply.code(400).send({ error: 'Channel is full' });
+        return;
+      }
+
+      const member = await prisma.channelMember.create({
+        data: { channelId: request.params.id, userId, role },
+        include: { user: { include: { profile: true } } },
+      });
+
+      return { member };
+    }
+  );
+
+  // Admin remove member from channel
+  fastify.delete<{ Params: { id: string; userId: string } }>(
+    '/channels/:id/members/:userId',
+    { preHandler: [authenticate, authorize('ADMIN')] },
+    async (request, reply) => {
+      const channel = await prisma.channel.findUnique({ where: { id: request.params.id } });
+      if (!channel) {
+        reply.code(404).send({ error: 'Channel not found' });
+        return;
+      }
+
+      const member = await prisma.channelMember.findUnique({
+        where: { channelId_userId: { channelId: request.params.id, userId: request.params.userId } },
+      });
+      if (!member) {
+        reply.code(404).send({ error: 'Member not found' });
+        return;
+      }
+
+      await prisma.channelMember.delete({
+        where: { channelId_userId: { channelId: request.params.id, userId: request.params.userId } },
+      });
+
+      return { success: true };
     }
   );
 
