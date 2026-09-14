@@ -64,4 +64,18 @@ class KioskService {
       await _channel.invokeMethod('maxVolume');
     } on PlatformException catch (_) {}
   }
+
+  static Future<bool> isAccessibilityEnabled() async {
+    try {
+      return await _channel.invokeMethod<bool>('isAccessibilityEnabled') ?? false;
+    } on PlatformException catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> openAccessibilitySettings() async {
+    try {
+      await _channel.invokeMethod('openAccessibilitySettings');
+    } on PlatformException catch (_) {}
+  }
 }

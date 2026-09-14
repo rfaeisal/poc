@@ -11,6 +11,7 @@ import '../../features/map/providers/location_provider.dart';
 import '../../features/ptt/providers/ptt_provider.dart';
 import '../../features/settings/providers/settings_provider.dart';
 import '../services/hardware_key_service.dart';
+import '../services/kiosk_service.dart';
 import '../widgets/hytera_audio_spectrograph.dart';
 import '../widgets/hytera_channel_frame.dart';
 import '../widgets/hytera_ptt_button.dart';
@@ -122,6 +123,7 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
         );
 
     PttForegroundService.start(channelName);
+    KioskService.showOnLockScreen();
 
     final settings = ref.read(settingsProvider);
     if (settings.locationSharing) {

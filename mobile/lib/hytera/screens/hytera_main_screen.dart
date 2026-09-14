@@ -23,19 +23,34 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
 
   static const _routes = ['/channel', '/pengaturan'];
 
+  static const _pttNativeChannel = MethodChannel('com.fakhriez.poc_ptx/ptt_native');
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initKiosk();
     _setupHardwareKeys();
+    _setupNativePttChannel();
   }
 
   @override
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_globalKeyHandler);
+    _pttNativeChannel.setMethodCallHandler(null);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _setupNativePttChannel() {
+    _pttNativeChannel.setMethodCallHandler((call) async {
+      if (call.method == 'pttDown') {
+        if (_currentIndex != 0) _onTabTap(0);
+        ref.read(pttProvider.notifier).startTransmit();
+      } else if (call.method == 'pttUp') {
+        ref.read(pttProvider.notifier).stopTransmit();
+      }
+    });
   }
 
   void _setupHardwareKeys() {
@@ -65,9 +80,6 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       KioskService.enableKiosk();
-    } else if (state == AppLifecycleState.paused) {
-      ref.read(hardwareKeyProvider.notifier).resetPttState();
-      KioskService.bringToFront();
     }
   }
 

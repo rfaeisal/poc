@@ -2,11 +2,20 @@ package com.fakhriez.poc_pecek
 
 import android.app.ActivityManager
 import android.app.KeyguardManager
+import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.provider.Settings
+import android.text.TextUtils
+import android.util.Log
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.session.MediaSession
+import android.media.session.PlaybackState
 import android.os.Build
 import android.os.PowerManager
 import android.net.wifi.WifiManager
@@ -31,6 +40,10 @@ class MainActivity : FlutterActivity() {
 
     private var kioskEnabled = false
     private var keyEventSink: EventChannel.EventSink? = null
+    private var mediaSession: MediaSession? = null
+    private var meigKeyReceiver: BroadcastReceiver? = null
+    private var pttChannel: MethodChannel? = null
+    private var pttKeyCode: Int = 142
 
     private var audioRecord: AudioRecord? = null
     private var recordingThread: Thread? = null
@@ -38,6 +51,18 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        pttChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.fakhriez.poc_ptx/ptt_native")
+        pttChannel?.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "setPttKeyCode" -> {
+                    pttKeyCode = call.argument<Int>("keyCode") ?: 293
+                    Log.w("PttNative", "PTT keyCode set to $pttKeyCode")
+                    result.success(true)
+                }
+                else -> result.notImplemented()
+            }
+        }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, KIOSK_CHANNEL)
             .setMethodCallHandler { call, result ->
@@ -95,6 +120,15 @@ class MainActivity : FlutterActivity() {
                         ensureAudioOutput()
                         result.success(true)
                     }
+                    "isAccessibilityEnabled" -> {
+                        result.success(isAccessibilityServiceEnabled())
+                    }
+                    "openAccessibilitySettings" -> {
+                        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        })
+                        result.success(true)
+                    }
                     "isKioskEnabled" -> {
                         result.success(kioskEnabled)
                     }
@@ -124,6 +158,74 @@ class MainActivity : FlutterActivity() {
                     keyEventSink = null
                 }
             })
+
+        mediaSession = MediaSession(this, "PocPtt").apply {
+            setPlaybackState(
+                PlaybackState.Builder()
+                    .setState(PlaybackState.STATE_PLAYING, 0, 1.0f)
+                    .setActions(PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE)
+                    .build()
+            )
+            setCallback(object : MediaSession.Callback() {
+                override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
+                    val ke = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        mediaButtonEvent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+                    }
+                    if (ke != null) {
+                        ensureScreenOn()
+                        keyEventSink?.success(mapOf(
+                            "keyCode" to ke.keyCode,
+                            "action" to ke.action,
+                            "scanCode" to ke.scanCode
+                        ))
+                    }
+                    return true
+                }
+            })
+            isActive = true
+        }
+
+        meigKeyReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val extras = intent.extras
+                val info = extras?.keySet()?.joinToString { "$it=${extras.get(it)}" } ?: "no extras"
+                Log.w("PttMeigKey", "broadcast received: $info")
+
+                val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+                if (!pm.isInteractive) {
+                    ensureScreenOn()
+                }
+
+                val action = extras?.getInt("action", -1) ?: -1
+                if (action == KeyEvent.ACTION_DOWN) {
+                    Log.w("PttMeigKey", "PTT DOWN via Meig broadcast")
+                    pttChannel?.invokeMethod("pttDown", null)
+                } else if (action == KeyEvent.ACTION_UP) {
+                    Log.w("PttMeigKey", "PTT UP via Meig broadcast")
+                    pttChannel?.invokeMethod("pttUp", null)
+                }
+            }
+        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                applicationContext.registerReceiver(
+                    meigKeyReceiver,
+                    IntentFilter("com.meigsmart.meigkeyaccessibility.onkeyevent"),
+                    Context.RECEIVER_EXPORTED
+                )
+            } else {
+                applicationContext.registerReceiver(
+                    meigKeyReceiver,
+                    IntentFilter("com.meigsmart.meigkeyaccessibility.onkeyevent")
+                )
+            }
+            Log.w("PttMeigKey", "dynamic receiver registered")
+        } catch (e: Exception) {
+            Log.e("PttMeigKey", "failed to register: ${e.message}")
+        }
     }
 
     private fun enableKioskMode() {
@@ -161,6 +263,31 @@ class MainActivity : FlutterActivity() {
     private fun bringAppToFront() {
         val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         am.moveTaskToFront(taskId, ActivityManager.MOVE_TASK_WITH_HOME)
+    }
+
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        val expected = ComponentName(this, PttAccessibilityService::class.java)
+        val enabledServices = Settings.Secure.getString(
+            contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+        val colonSplitter = TextUtils.SimpleStringSplitter(':')
+        colonSplitter.setString(enabledServices)
+        while (colonSplitter.hasNext()) {
+            val name = colonSplitter.next()
+            val cn = ComponentName.unflattenFromString(name)
+            if (cn != null && cn == expected) return true
+        }
+        return false
+    }
+
+    private fun ensureScreenOn() {
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (!pm.isInteractive) {
+            wakeUpScreen()
+            showOnLockScreen()
+            bringAppToFront()
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -254,6 +381,8 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        Log.w("PttNative", "dispatchKeyEvent keyCode=${event.keyCode} action=${event.action} repeat=${event.repeatCount}")
+
         if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
             event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
@@ -267,6 +396,20 @@ class MainActivity : FlutterActivity() {
             return true
         }
 
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            ensureScreenOn()
+        }
+
+        if (event.keyCode == pttKeyCode) {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                Log.w("PttNative", "PTT DOWN via native, invoking Flutter")
+                pttChannel?.invokeMethod("pttDown", null)
+            } else if (event.action == KeyEvent.ACTION_UP) {
+                Log.w("PttNative", "PTT UP via native, invoking Flutter")
+                pttChannel?.invokeMethod("pttUp", null)
+            }
+        }
+
         keyEventSink?.success(
             mapOf(
                 "keyCode" to event.keyCode,
@@ -275,6 +418,14 @@ class MainActivity : FlutterActivity() {
             )
         )
         return super.dispatchKeyEvent(event)
+    }
+
+    override fun onDestroy() {
+        mediaSession?.release()
+        mediaSession = null
+        try { meigKeyReceiver?.let { applicationContext.unregisterReceiver(it) } } catch (_: Exception) {}
+        meigKeyReceiver = null
+        super.onDestroy()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
