@@ -100,13 +100,28 @@ class _HyteraChannelFrameState extends State<HyteraChannelFrame> {
               ),
             ],
           ),
-          Text(
-            '${widget.memberCount} online',
-            style: const TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 7,
-              color: Color(0xFF64748B),
-            ),
+          Row(
+            children: [
+              Text(
+                '${widget.memberCount} online',
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 7,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+              if (widget.totalChannels > 1) ...[
+                const Spacer(),
+                Text(
+                  'CH ${widget.channelIndex + 1}/${widget.totalChannels}',
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 6,
+                    color: Color(0xFF4A6A8A),
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),

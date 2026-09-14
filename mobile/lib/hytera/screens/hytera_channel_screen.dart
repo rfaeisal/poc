@@ -10,6 +10,7 @@ import '../../features/channels/providers/channels_provider.dart';
 import '../../features/map/providers/location_provider.dart';
 import '../../features/ptt/providers/ptt_provider.dart';
 import '../../features/settings/providers/settings_provider.dart';
+import '../services/hardware_key_service.dart';
 import '../widgets/hytera_audio_spectrograph.dart';
 import '../widgets/hytera_channel_frame.dart';
 import '../widgets/hytera_ptt_button.dart';
@@ -29,10 +30,48 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
   JoinChannelResult? _joinResult;
   bool _connecting = false;
 
+  bool _switching = false;
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => _autoJoin());
+    Future.microtask(() {
+      _autoJoin();
+      _setupChannelKeys();
+    });
+  }
+
+  void _setupChannelKeys() {
+    final notifier = ref.read(hardwareKeyProvider.notifier);
+    notifier.onChannelUp = () => _cycleChannel(1);
+    notifier.onChannelDown = () => _cycleChannel(-1);
+  }
+
+  Future<void> _cycleChannel(int direction) async {
+    if (_switching) return;
+    final channels = ref.read(channelsProvider).channels;
+    if (channels.length < 2) return;
+
+    final currentId = _joinResult?.channel.id;
+    var idx = channels.indexWhere((c) => c.id == currentId);
+    if (idx < 0) idx = 0;
+
+    idx = (idx + direction) % channels.length;
+    final target = channels[idx];
+
+    _switching = true;
+    if (mounted) setState(() {});
+
+    try {
+      final result = await ref
+          .read(channelsProvider.notifier)
+          .joinChannel(target.id);
+      if (!mounted || result == null) return;
+      await _switchChannel(result);
+    } finally {
+      _switching = false;
+      if (mounted) setState(() {});
+    }
   }
 
   Future<void> _autoJoin() async {
@@ -106,6 +145,13 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
     if (mounted) setState(() {});
   }
 
+  int _currentChannelIndex() {
+    final channels = ref.read(channelsProvider).channels;
+    final currentId = _joinResult?.channel.id;
+    final idx = channels.indexWhere((c) => c.id == currentId);
+    return idx < 0 ? 0 : idx;
+  }
+
   void _openChannelList() async {
     final result = await context.push<JoinChannelResult>('/channel-list');
     if (result != null && mounted) {
@@ -146,6 +192,8 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
         HyteraChannelFrame(
           channelName: ptt.channelName ?? 'No Channel',
           memberCount: membersState.onlineMembers.length,
+          channelIndex: _currentChannelIndex(),
+          totalChannels: ref.read(channelsProvider).channels.length,
           onChannelListTap: _openChannelList,
         ),
         const Expanded(
