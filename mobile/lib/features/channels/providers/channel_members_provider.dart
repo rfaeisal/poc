@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/mqtt/mqtt_service.dart';
@@ -14,6 +15,11 @@ final mqttServiceProvider = Provider<MqttService>((ref) {
   final service = MqttService();
   ref.onDispose(() => service.dispose());
   return service;
+});
+
+final mqttConnectedProvider = StreamProvider<bool>((ref) {
+  final mqtt = ref.watch(mqttServiceProvider);
+  return mqtt.connectionState.map((state) => state == MqttConnectionState.connected);
 });
 
 final channelMembersProvider =

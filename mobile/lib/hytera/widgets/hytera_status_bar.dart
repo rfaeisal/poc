@@ -157,14 +157,27 @@ class _HyteraStatusBarState extends State<HyteraStatusBar> {
               ),
             ],
           ),
-          Text(
-            _latencyMs != null ? '${_latencyMs}ms' : '--',
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 7,
-              fontWeight: FontWeight.w500,
-              color: latencyColor,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                widget.isMqttConnected ? Icons.cloud_done : Icons.cloud_off,
+                size: 12,
+                color: widget.isMqttConnected
+                    ? const Color(0xFF4ADE80)
+                    : const Color(0xFFEF4444),
+              ),
+              const SizedBox(width: 3),
+              Text(
+                _latencyMs != null ? '${_latencyMs}ms' : '--',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 7,
+                  fontWeight: FontWeight.w500,
+                  color: latencyColor,
+                ),
+              ),
+            ],
           ),
           Row(
             mainAxisSize: MainAxisSize.min,

@@ -183,7 +183,9 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
 
     return Column(
       children: [
-        const HyteraStatusBar(),
+        HyteraStatusBar(
+          isMqttConnected: ref.watch(mqttConnectedProvider).valueOrNull ?? false,
+        ),
         const HyteraSpeakerBox(),
         HyteraAudioSpectrograph(
           isTransmitting: isTransmitting,
