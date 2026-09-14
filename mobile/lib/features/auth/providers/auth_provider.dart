@@ -97,8 +97,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = User.fromJson(response.data['user'] as Map<String, dynamic>);
       state = AuthState(user: user);
     } on DioException catch (e) {
-      final message = e.response?.data?['message'] as String? ??
-          'Login gagal. Coba lagi.';
+      final String message;
+      if (e.response != null) {
+        message = e.response?.data?['message'] as String? ??
+            'Login gagal (${e.response?.statusCode})';
+      } else {
+        message = 'Login gagal: ${e.type.name} - ${e.message ?? e.error}';
+      }
       state = state.copyWith(isLoading: false, error: message);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'Login gagal: $e');

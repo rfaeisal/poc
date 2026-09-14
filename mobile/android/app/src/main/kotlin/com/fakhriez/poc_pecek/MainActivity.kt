@@ -3,7 +3,10 @@ package com.fakhriez.poc_pecek
 import android.app.ActivityManager
 import android.app.KeyguardManager
 import android.content.Context
+import android.media.AudioFormat
 import android.media.AudioManager
+import android.media.AudioRecord
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.PowerManager
 import android.net.wifi.WifiManager
@@ -16,6 +19,9 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
+import java.io.File
+import java.io.FileOutputStream
+import java.io.RandomAccessFile
 
 class MainActivity : FlutterActivity() {
     companion object {
@@ -25,6 +31,10 @@ class MainActivity : FlutterActivity() {
 
     private var kioskEnabled = false
     private var keyEventSink: EventChannel.EventSink? = null
+
+    private var audioRecord: AudioRecord? = null
+    private var recordingThread: Thread? = null
+    @Volatile private var isRecording = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -81,8 +91,25 @@ class MainActivity : FlutterActivity() {
                         setMaxVolume()
                         result.success(true)
                     }
+                    "ensureAudioOutput" -> {
+                        ensureAudioOutput()
+                        result.success(true)
+                    }
                     "isKioskEnabled" -> {
                         result.success(kioskEnabled)
+                    }
+                    "startRecording" -> {
+                        val path = call.argument<String>("path")
+                        if (path != null) {
+                            startNativeRecording(path)
+                            result.success(true)
+                        } else {
+                            result.error("INVALID_ARG", "path required", null)
+                        }
+                    }
+                    "stopRecording" -> {
+                        stopNativeRecording()
+                        result.success(true)
                     }
                     else -> result.notImplemented()
                 }
@@ -118,7 +145,6 @@ class MainActivity : FlutterActivity() {
                     or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             )
         }
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     private fun disableKioskMode() {
@@ -197,6 +223,18 @@ class MainActivity : FlutterActivity() {
         am.isSpeakerphoneOn = true
     }
 
+    private fun ensureAudioOutput() {
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        am.mode = AudioManager.MODE_IN_COMMUNICATION
+        am.isSpeakerphoneOn = true
+        // Sync VOICE_CALL volume to match MUSIC volume ratio set by user
+        val musicVol = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val musicMax = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val voiceMax = am.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL)
+        val ratio = if (musicMax > 0) musicVol.toFloat() / musicMax else 0.5f
+        am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, (voiceMax * ratio).toInt().coerceAtLeast(1), 0)
+    }
+
     private fun pinApp() {
         try {
             startLockTask()
@@ -216,6 +254,19 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+            event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                val direction = if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP)
+                    AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER
+                am.adjustStreamVolume(
+                    AudioManager.STREAM_MUSIC, direction, AudioManager.FLAG_SHOW_UI
+                )
+            }
+            return true
+        }
+
         keyEventSink?.success(
             mapOf(
                 "keyCode" to event.keyCode,
@@ -232,4 +283,108 @@ class MainActivity : FlutterActivity() {
             enableKioskMode()
         }
     }
+
+    private fun startNativeRecording(path: String) {
+        stopNativeRecording()
+
+        val sampleRate = 16000
+        val channelConfig = AudioFormat.CHANNEL_IN_MONO
+        val audioFormat = AudioFormat.ENCODING_PCM_16BIT
+        val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
+            .coerceAtLeast(4096)
+
+        try {
+            val rec = AudioRecord(
+                MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                sampleRate, channelConfig, audioFormat, bufferSize * 2
+            )
+            if (rec.state == AudioRecord.STATE_INITIALIZED) {
+                audioRecord = rec
+            } else {
+                rec.release()
+            }
+        } catch (_: Exception) {}
+
+        if (audioRecord == null) {
+            audioRecord = AudioRecord(
+                MediaRecorder.AudioSource.MIC,
+                sampleRate, channelConfig, audioFormat, bufferSize * 2
+            )
+        }
+
+        isRecording = true
+        audioRecord?.startRecording()
+
+        recordingThread = Thread {
+            val file = File(path)
+            val fos = FileOutputStream(file)
+            // Write WAV header placeholder (44 bytes)
+            fos.write(ByteArray(44))
+
+            val buffer = ShortArray(bufferSize / 2)
+            var totalBytes = 0L
+
+            while (isRecording) {
+                val read = audioRecord?.read(buffer, 0, buffer.size) ?: 0
+                if (read > 0) {
+                    val byteBuffer = ByteArray(read * 2)
+                    for (i in 0 until read) {
+                        byteBuffer[i * 2] = (buffer[i].toInt() and 0xFF).toByte()
+                        byteBuffer[i * 2 + 1] = (buffer[i].toInt() shr 8 and 0xFF).toByte()
+                    }
+                    fos.write(byteBuffer)
+                    totalBytes += byteBuffer.size
+                }
+            }
+            fos.close()
+
+            // Write actual WAV header
+            val raf = RandomAccessFile(file, "rw")
+            writeWavHeader(raf, totalBytes, sampleRate)
+            raf.close()
+        }
+        recordingThread?.start()
+    }
+
+    private fun stopNativeRecording() {
+        isRecording = false
+        recordingThread?.join(3000)
+        recordingThread = null
+        try {
+            audioRecord?.stop()
+            audioRecord?.release()
+        } catch (_: Exception) {}
+        audioRecord = null
+    }
+
+    private fun writeWavHeader(raf: RandomAccessFile, pcmSize: Long, sampleRate: Int) {
+        val channels = 1
+        val bitsPerSample = 16
+        val byteRate = sampleRate * channels * bitsPerSample / 8
+        val blockAlign = channels * bitsPerSample / 8
+
+        raf.seek(0)
+        raf.writeBytes("RIFF")
+        raf.write(intToLEBytes((36 + pcmSize).toInt()))
+        raf.writeBytes("WAVE")
+        raf.writeBytes("fmt ")
+        raf.write(intToLEBytes(16))
+        raf.write(shortToLEBytes(1))
+        raf.write(shortToLEBytes(channels.toShort()))
+        raf.write(intToLEBytes(sampleRate))
+        raf.write(intToLEBytes(byteRate))
+        raf.write(shortToLEBytes(blockAlign.toShort()))
+        raf.write(shortToLEBytes(bitsPerSample.toShort()))
+        raf.writeBytes("data")
+        raf.write(intToLEBytes(pcmSize.toInt()))
+    }
+
+    private fun intToLEBytes(v: Int): ByteArray = byteArrayOf(
+        (v and 0xFF).toByte(), (v shr 8 and 0xFF).toByte(),
+        (v shr 16 and 0xFF).toByte(), (v shr 24 and 0xFF).toByte()
+    )
+
+    private fun shortToLEBytes(v: Short): ByteArray = byteArrayOf(
+        (v.toInt() and 0xFF).toByte(), (v.toInt() shr 8 and 0xFF).toByte()
+    )
 }

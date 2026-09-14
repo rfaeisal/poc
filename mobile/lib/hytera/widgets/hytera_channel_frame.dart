@@ -42,15 +42,19 @@ class _HyteraChannelFrameState extends State<HyteraChannelFrame> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'CHANNEL',
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 10,
-                  color: Color(0xFF4A6A8A),
-                  letterSpacing: 0.5,
+              Expanded(
+                child: Text(
+                  widget.channelName,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                    color: Color(0xFFE2E8F0),
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 4),
               Focus(
                 onFocusChange: (f) => setState(() => _buttonFocused = f),
                 onKeyEvent: (node, event) {
@@ -83,10 +87,10 @@ class _HyteraChannelFrameState extends State<HyteraChannelFrame> {
                       borderRadius: BorderRadius.circular(3),
                     ),
                     child: const Text(
-                      '☰ CH LIST',
+                      'CH▼',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 10,
+                        fontSize: 7,
                         color: Color(0xFF4A9EFF),
                         fontWeight: FontWeight.w700,
                       ),
@@ -96,60 +100,12 @@ class _HyteraChannelFrameState extends State<HyteraChannelFrame> {
               ),
             ],
           ),
-          const SizedBox(height: 3),
           Text(
-            widget.channelName,
+            '${widget.memberCount} online',
             style: const TextStyle(
               fontFamily: 'monospace',
-              fontSize: 15,
-              color: Color(0xFFE2E8F0),
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text.rich(
-            TextSpan(
-              text: 'AKTIF : ',
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 11,
-                color: Color(0xFF64748B),
-              ),
-              children: [
-                TextSpan(
-                  text: '${widget.memberCount} Personel',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF94A3B8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 3),
-          Row(
-            children: List.generate(
-              widget.totalChannels.clamp(1, 5),
-              (i) => Padding(
-                padding: const EdgeInsets.only(right: 3),
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: i == widget.channelIndex
-                        ? const Color(0xFF1E5A9A)
-                        : const Color(0xFF0F2040),
-                    border: Border.all(
-                      color: i == widget.channelIndex
-                          ? const Color(0xFF4A9EFF)
-                          : const Color(0xFF1E3A5F),
-                      width: 1,
-                    ),
-                  ),
-                ),
-              ),
+              fontSize: 7,
+              color: Color(0xFF64748B),
             ),
           ),
         ],

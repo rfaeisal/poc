@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
-
 import '../../core/services/foreground_service.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/channels/models/channel.dart';
@@ -34,7 +32,6 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
   @override
   void initState() {
     super.initState();
-    WakelockPlus.enable();
     Future.microtask(() => _autoJoin());
   }
 

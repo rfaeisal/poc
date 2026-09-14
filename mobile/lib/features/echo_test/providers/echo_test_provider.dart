@@ -1,10 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
-import 'package:just_audio/just_audio.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -12,6 +9,8 @@ import '../../../config/app_config.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../auth/providers/auth_provider.dart';
+
+const _kioskChannel = MethodChannel('com.fakhriez.poc_ptx/kiosk');
 
 final echoTestProvider =
     StateNotifierProvider.autoDispose<EchoTestNotifier, EchoTestState>((ref) {
@@ -63,17 +62,12 @@ class EchoTestState {
 
 class EchoTestNotifier extends StateNotifier<EchoTestState> {
   final ApiClient _apiClient;
-  Room? _pubRoom;
-  Room? _subRoom;
+  Room? _room;
+  EventsListener<RoomEvent>? _roomListener;
   LocalAudioTrack? _audioTrack;
-  EventsListener<RoomEvent>? _subListener;
-  int? _pttStartTimestamp;
   DateTime? _transmitStart;
-  webrtc.MediaRecorder? _recorder;
-  AudioPlayer? _player;
-  String? _recordingPath;
-  StreamSubscription? _playerSub;
-  StreamSubscription? _positionSub;
+  int? _stopTransmitTimestamp;
+  DateTime? _playbackStart;
 
   EchoTestNotifier({required this._apiClient}) : super(const EchoTestState());
 
@@ -98,11 +92,10 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
       final response =
           await _apiClient.dio.post(ApiEndpoints.echoStart, data: {});
       final data = response.data;
-      final publishToken = data['publishToken'] as String;
-      final subscribeToken = data['subscribeToken'] as String;
+      final token = data['token'] as String;
       final livekitUrl = AppConfig.livekitUrl;
 
-      _pubRoom = Room(
+      _room = Room(
         roomOptions: const RoomOptions(
           adaptiveStream: true,
           dynacast: true,
@@ -110,30 +103,11 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
             encoding: AudioEncoding(maxBitrate: AppConfig.audioBitrate),
             dtx: false,
           ),
-          defaultAudioCaptureOptions: AudioCaptureOptions(
-            echoCancellation: false,
-            noiseSuppression: true,
-            autoGainControl: true,
-          ),
         ),
       );
-      await _pubRoom!.connect(livekitUrl, publishToken);
 
-      _subRoom = Room(
-        roomOptions: const RoomOptions(
-          adaptiveStream: true,
-          dynacast: true,
-          defaultAudioOutputOptions:
-              AudioOutputOptions(speakerOn: true),
-        ),
-      );
-      await _subRoom!.connect(
-        livekitUrl,
-        subscribeToken,
-        connectOptions: const ConnectOptions(autoSubscribe: false),
-      );
-
-      _setupSubscriberListener();
+      await _room!.connect(livekitUrl, token);
+      _setupRoomListeners();
 
       state = state.copyWith(status: EchoTestStatus.ready);
     } catch (e) {
@@ -144,57 +118,82 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
     }
   }
 
-  void _setupSubscriberListener() {
-    if (_subRoom == null) return;
+  void _setupRoomListeners() {
+    if (_room == null) return;
+    _roomListener = _room!.createListener();
 
-    _subListener = _subRoom!.createListener();
+    _roomListener!
+      ..on<TrackSubscribedEvent>((event) {
+        if (event.track is AudioTrack) {
+          // Bot echoing back — route audio to speaker
+          try {
+            _kioskChannel.invokeMethod('ensureAudioOutput');
+          } catch (_) {}
 
-    _subListener!.on<TrackPublishedEvent>((event) {
-      if (_pttStartTimestamp != null) {
-        final now = DateTime.now().millisecondsSinceEpoch;
-        final latency = now - _pttStartTimestamp!;
-        final history = [...state.latencyHistory, latency];
-        if (history.length > 30) {
-          history.removeRange(0, history.length - 30);
+          _playbackStart = DateTime.now();
+
+          // Measure latency: time from stop TX to bot echo arriving
+          if (_stopTransmitTimestamp != null) {
+            final now = DateTime.now().millisecondsSinceEpoch;
+            final latency = now - _stopTransmitTimestamp!;
+            final history = [...state.latencyHistory, latency];
+            if (history.length > 30) {
+              history.removeRange(0, history.length - 30);
+            }
+            state = state.copyWith(
+              status: EchoTestStatus.playing,
+              latencyMs: latency,
+              latencyHistory: history,
+              playbackDuration: Duration.zero,
+            );
+          } else {
+            state = state.copyWith(
+              status: EchoTestStatus.playing,
+              playbackDuration: Duration.zero,
+            );
+          }
         }
-        state = state.copyWith(
-          latencyMs: latency,
-          latencyHistory: history,
-        );
-      }
-    });
+      })
+      ..on<TrackUnsubscribedEvent>((event) {
+        if (event.track is AudioTrack) {
+          // Bot finished playing echo
+          final playDuration = _playbackStart != null
+              ? DateTime.now().difference(_playbackStart!)
+              : null;
+          _playbackStart = null;
+          if (mounted) {
+            state = state.copyWith(
+              status: EchoTestStatus.ready,
+              playbackDuration: playDuration,
+            );
+          }
+        }
+      })
+      ..on<RoomDisconnectedEvent>((_) {
+        if (mounted) {
+          state = state.copyWith(
+            status: EchoTestStatus.error,
+            error: 'Koneksi terputus',
+          );
+        }
+      });
   }
 
   Future<void> startTransmit() async {
-    if (_pubRoom == null) return;
-    if (state.status != EchoTestStatus.ready) {
-      return;
-    }
+    if (_room == null) return;
+    if (state.status != EchoTestStatus.ready) return;
 
-    _pttStartTimestamp = DateTime.now().millisecondsSinceEpoch;
     _transmitStart = DateTime.now();
+    _stopTransmitTimestamp = null;
 
     _audioTrack = await LocalAudioTrack.create(
       const AudioCaptureOptions(
-        echoCancellation: false,
         noiseSuppression: true,
+        echoCancellation: true,
         autoGainControl: true,
       ),
     );
-    await _pubRoom!.localParticipant?.publishAudioTrack(_audioTrack!);
-
-    try {
-      _recordingPath =
-          '${Directory.systemTemp.path}/echo_${DateTime.now().millisecondsSinceEpoch}.wav';
-      _recorder = webrtc.MediaRecorder();
-      await _recorder!.start(
-        _recordingPath!,
-        audioChannel: webrtc.RecorderAudioChannel.INPUT,
-      );
-    } catch (_) {
-      _recorder = null;
-      _recordingPath = null;
-    }
+    await _room!.localParticipant?.publishAudioTrack(_audioTrack!);
 
     state = state.copyWith(status: EchoTestStatus.transmitting);
   }
@@ -206,125 +205,45 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
         ? DateTime.now().difference(_transmitStart!)
         : null;
 
-    try {
-      await _recorder?.stop();
-    } catch (_) {}
-    _recorder = null;
+    _stopTransmitTimestamp = DateTime.now().millisecondsSinceEpoch;
 
+    // Unpublish and dispose track
     if (_audioTrack != null) {
       final sid = _audioTrack!.sid;
       if (sid != null) {
-        await _pubRoom?.localParticipant?.removePublishedTrack(sid);
+        await _room?.localParticipant?.removePublishedTrack(sid);
       }
-      await _audioTrack?.dispose();
+      await _audioTrack!.dispose();
       _audioTrack = null;
     }
 
-    if (_recordingPath != null && File(_recordingPath!).existsSync()) {
-      state = state.copyWith(
-        status: EchoTestStatus.playing,
-        transmitDuration: txDuration,
-        playbackDuration: Duration.zero,
-      );
-      try {
-        await AudioManager.instance
-            .setSpeakerOutputPreferred(true, force: true);
-
-        try {
-          const platform = MethodChannel('com.fakhriez.poc_ptx/kiosk');
-          await platform.invokeMethod('maxVolume');
-        } catch (_) {}
-
-        _player = AudioPlayer(
-          audioPipeline: AudioPipeline(
-            androidAudioEffects: [
-              AndroidLoudnessEnhancer()..setTargetGain(30.0),
-            ],
-          ),
-        );
-        final fileDuration = await _player!.setFilePath(_recordingPath!);
-        if (fileDuration != null) {
-          state = state.copyWith(playbackDuration: fileDuration);
-        }
-        await _player!.setVolume(1.0);
-
-        _positionSub = _player!.positionStream.listen((pos) {
-          if (mounted) {
-            state = state.copyWith(playbackDuration: pos);
-          }
-        });
-
-        _playerSub = _player!.playerStateStream.listen((playerState) {
-          if (playerState.processingState == ProcessingState.completed) {
-            final finalDur = _player?.duration;
-            _stopPlayback();
-            if (mounted) {
-              state = state.copyWith(
-                status: EchoTestStatus.ready,
-                playbackDuration: finalDur,
-              );
-            }
-          }
-        });
-        await _player!.play();
-      } catch (_) {
-        _stopPlayback();
-        if (mounted) {
-          state = state.copyWith(status: EchoTestStatus.ready);
-        }
-      }
-    } else {
-      state = state.copyWith(status: EchoTestStatus.ready);
-    }
-  }
-
-  void _stopPlayback() {
-    _positionSub?.cancel();
-    _positionSub = null;
-    _playerSub?.cancel();
-    _playerSub = null;
-    _player?.stop();
-    _player?.dispose();
-    _player = null;
-    if (_recordingPath != null) {
-      try {
-        File(_recordingPath!).deleteSync();
-      } catch (_) {}
-      _recordingPath = null;
-    }
+    // Go to ready and wait for bot echo via TrackSubscribedEvent
+    state = state.copyWith(
+      status: EchoTestStatus.ready,
+      transmitDuration: txDuration,
+    );
   }
 
   Future<void> stop() async {
-    _stopPlayback();
-
-    try {
-      await _recorder?.stop();
-    } catch (_) {}
-    _recorder = null;
+    _roomListener?.dispose();
+    _roomListener = null;
 
     if (_audioTrack != null) {
       final sid = _audioTrack!.sid;
       if (sid != null) {
-        await _pubRoom?.localParticipant?.removePublishedTrack(sid);
+        try {
+          await _room?.localParticipant?.removePublishedTrack(sid);
+        } catch (_) {}
       }
-      await _audioTrack?.dispose();
+      await _audioTrack!.dispose();
       _audioTrack = null;
     }
 
-    _subListener?.dispose();
-    _subListener = null;
-
     try {
-      await _pubRoom?.disconnect();
+      await _room?.disconnect();
     } catch (_) {}
-    await _pubRoom?.dispose();
-    _pubRoom = null;
-
-    try {
-      await _subRoom?.disconnect();
-    } catch (_) {}
-    await _subRoom?.dispose();
-    _subRoom = null;
+    await _room?.dispose();
+    _room = null;
 
     try {
       await _apiClient.dio.post(ApiEndpoints.echoStop, data: {});
@@ -335,14 +254,9 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
 
   @override
   void dispose() {
-    _positionSub?.cancel();
-    _playerSub?.cancel();
-    _player?.dispose();
-    _recorder = null;
-    _subListener?.dispose();
+    _roomListener?.dispose();
     _audioTrack?.dispose();
-    _pubRoom?.dispose();
-    _subRoom?.dispose();
+    _room?.dispose();
     super.dispose();
   }
 }

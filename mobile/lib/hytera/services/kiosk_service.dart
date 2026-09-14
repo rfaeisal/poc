@@ -58,4 +58,10 @@ class KioskService {
       await _channel.invokeMethod('showOnLockScreen');
     } on PlatformException catch (_) {}
   }
+
+  static Future<void> maxVolume() async {
+    try {
+      await _channel.invokeMethod('maxVolume');
+    } on PlatformException catch (_) {}
+  }
 }

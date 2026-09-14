@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class HyteraNavbar extends StatelessWidget {
   final int currentIndex;
@@ -13,45 +12,27 @@ class HyteraNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.arrowLeft &&
-              currentIndex > 0) {
-            onTap(currentIndex - 1);
-            return KeyEventResult.handled;
-          }
-          if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
-              currentIndex < 1) {
-            onTap(currentIndex + 1);
-            return KeyEventResult.handled;
-          }
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Container(
-        height: 52,
-        decoration: const BoxDecoration(
-          color: Color(0xFF060910),
-          border:
-              Border(top: BorderSide(color: Color(0xFF0F1E2E), width: 1)),
-        ),
-        child: Row(
-          children: [
-            _NavItem(
-              icon: Icons.cell_tower,
-              label: 'Channel',
-              isActive: currentIndex == 0,
-              onTap: () => onTap(0),
-            ),
-            _NavItem(
-              icon: Icons.settings_outlined,
-              label: 'Pengaturan',
-              isActive: currentIndex == 1,
-              onTap: () => onTap(1),
-            ),
-          ],
-        ),
+    return Container(
+      height: 36,
+      decoration: const BoxDecoration(
+        color: Color(0xFF060910),
+        border: Border(top: BorderSide(color: Color(0xFF0F1E2E), width: 1)),
+      ),
+      child: Row(
+        children: [
+          _NavItem(
+            icon: Icons.cell_tower,
+            label: 'Channel',
+            isActive: currentIndex == 0,
+            onTap: () => onTap(0),
+          ),
+          _NavItem(
+            icon: Icons.settings_outlined,
+            label: 'Pengaturan',
+            isActive: currentIndex == 1,
+            onTap: () => onTap(1),
+          ),
+        ],
       ),
     );
   }
@@ -80,20 +61,8 @@ class _NavItem extends StatelessWidget {
         onTap: onTap,
         child: Container(
           color: isActive ? const Color(0xFF0A1628) : Colors.transparent,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 10,
-                  color: color,
-                ),
-              ),
-            ],
+          child: Center(
+            child: Icon(icon, size: 20, color: color),
           ),
         ),
       ),

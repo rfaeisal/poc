@@ -37,7 +37,7 @@ android {
         create("pocPecek") {
             dimension = "app"
             applicationId = "com.fakhriez.poc_pecek"
-            resValue("string", "app_name", "POC-Pecek")
+            resValue("string", "app_name", "POC-SMART")
         }
         create("hytera") {
             dimension = "app"

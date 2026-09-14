@@ -20,7 +20,6 @@ class HyteraSpeakerBox extends ConsumerWidget {
     final bool isActive = isRx || isTx || isLocked;
 
     final Color bgColor;
-    final Color borderColor;
     final Color callsignColor;
     final String badgeText;
     final Color badgeBg;
@@ -28,28 +27,24 @@ class HyteraSpeakerBox extends ConsumerWidget {
 
     if (isLocked) {
       bgColor = const Color(0xFF1A0505);
-      borderColor = const Color(0xFFDC2626);
       callsignColor = const Color(0xFFF87171);
       badgeText = 'LOCKED';
       badgeBg = const Color(0xFF1A0505);
       badgeColor = const Color(0xFFFCA5A5);
     } else if (isTx) {
       bgColor = const Color(0xFF140808);
-      borderColor = const Color(0xFFDC2626);
       callsignColor = const Color(0xFFF87171);
       badgeText = 'TX';
       badgeBg = const Color(0xFF140808);
       badgeColor = const Color(0xFFF87171);
     } else if (isRx) {
       bgColor = const Color(0xFF041810);
-      borderColor = const Color(0xFF0F6E56);
       callsignColor = const Color(0xFF4ADE80);
       badgeText = 'RX';
       badgeBg = const Color(0xFF041810);
       badgeColor = const Color(0xFF4ADE80);
     } else {
       bgColor = const Color(0xFF080D18);
-      borderColor = const Color(0xFF1E3A5F);
       callsignColor = ptt.lastSpeakerCallsign != null
           ? const Color(0xFF4A6A8A)
           : const Color(0xFF2A4A6A);
@@ -90,72 +85,34 @@ class HyteraSpeakerBox extends ConsumerWidget {
     final connStatus = ptt.connectionStatus;
 
     return Container(
-      constraints: const BoxConstraints(minHeight: 80),
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       color: bgColor,
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 46,
-            decoration: BoxDecoration(
-              color: bgColor == const Color(0xFF080D18)
-                  ? const Color(0xFF0F2040)
-                  : bgColor,
-              border: Border.all(color: borderColor, width: 1),
-              borderRadius: BorderRadius.circular(3),
-            ),
-            child: Icon(
-              Icons.person,
-              size: 20,
-              color: isRx
-                  ? const Color(0xFF4ADE80)
-                  : (isTx || isLocked)
-                      ? const Color(0xFFF87171)
-                      : const Color(0xFF2A5A8A),
-            ),
-          ),
-          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'CALLSIGN',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 10,
-                    color: Color(0xFF4A6A8A),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                Text(
-                  callsign,
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                    color: callsignColor,
-                  ),
-                ),
-                if (speakerName != null)
-                  Text(
-                    speakerName,
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 10,
-                      color: Color(0xFF4A6A8A),
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                const SizedBox(height: 2),
                 Row(
                   children: [
+                    Expanded(
+                      child: Text(
+                        callsign,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1,
+                          color: callsignColor,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 2),
+                          horizontal: 4, vertical: 1),
                       decoration: BoxDecoration(
                         color: badgeBg,
                         border: isActive
@@ -170,33 +127,40 @@ class HyteraSpeakerBox extends ConsumerWidget {
                         badgeText,
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 10,
+                          fontSize: 7,
                           fontWeight: FontWeight.w600,
                           color: badgeColor,
-                          letterSpacing: 0.3,
                         ),
                       ),
                     ),
+                  ],
+                ),
+                if (speakerName != null)
+                  Text(
+                    speakerName,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 7,
+                      color: Color(0xFF4A6A8A),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                Row(
+                  children: [
                     if (isActive) ...[
-                      const SizedBox(width: 5),
                       TalkTimer(
                         isActive: true,
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 13,
+                          fontSize: 8,
                           fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
                           color: isRx
                               ? const Color(0xFF4ADE80)
                               : const Color(0xFFF87171),
                         ),
                       ),
+                      const SizedBox(width: 6),
                     ],
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
                     Container(
                       width: 5,
                       height: 5,
@@ -209,16 +173,16 @@ class HyteraSpeakerBox extends ConsumerWidget {
                                 : const Color(0xFFEF4444),
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 3),
                     Text(
                       connStatus == ConnectionStatus.connected
-                          ? 'Connected'
+                          ? 'OK'
                           : connStatus == ConnectionStatus.connecting
-                              ? 'Reconnecting'
-                              : 'Disconnected',
+                              ? '...'
+                              : 'OFF',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 10,
+                        fontSize: 7,
                         color: connStatus == ConnectionStatus.connected
                             ? const Color(0xFF4A8A6A)
                             : connStatus == ConnectionStatus.connecting

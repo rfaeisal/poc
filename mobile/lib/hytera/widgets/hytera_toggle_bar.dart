@@ -70,7 +70,7 @@ class _ToggleChip extends StatelessWidget {
           label,
           style: TextStyle(
             fontFamily: 'monospace',
-            fontSize: 10,
+            fontSize: 7,
             color: isOn
                 ? const Color(0xFF4ADE80)
                 : const Color(0xFF4A6A8A),

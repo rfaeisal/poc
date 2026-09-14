@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:livekit_client/livekit_client.dart';
 
@@ -9,6 +10,8 @@ import '../../../core/mqtt/mqtt_service.dart';
 import '../../../core/mqtt/mqtt_topics.dart';
 import '../../channels/models/channel.dart';
 import '../../channels/providers/channel_members_provider.dart';
+
+const _kioskChannel = MethodChannel('com.fakhriez.poc_ptx/kiosk');
 
 final livekitServiceProvider = Provider<LiveKitService>((ref) {
   final service = LiveKitService();
@@ -144,6 +147,33 @@ class PttNotifier extends StateNotifier<PttState> {
       })
       ..on<RoomReconnectedEvent>((_) {
         state = state.copyWith(connectionStatus: ConnectionStatus.connected);
+      })
+      ..on<TrackSubscribedEvent>((event) {
+        if (event.track is AudioTrack) {
+          final participant = event.participant;
+          final identity = participant.identity;
+          final callsign = participant.name.isNotEmpty
+              ? participant.name
+              : identity;
+          if (identity != _myUserId) {
+            try {
+              _kioskChannel.invokeMethod('ensureAudioOutput');
+            } catch (_) {}
+            state = state.copyWith(
+              currentSpeakerId: identity,
+              currentSpeakerCallsign: callsign,
+              lastSpeakerCallsign: callsign,
+            );
+          }
+        }
+      })
+      ..on<TrackUnsubscribedEvent>((event) {
+        if (event.track is AudioTrack) {
+          final identity = event.participant.identity;
+          if (state.currentSpeakerId == identity) {
+            state = state.copyWith(clearSpeaker: true);
+          }
+        }
       });
   }
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,7 +75,8 @@ class ChannelMembersNotifier extends StateNotifier<ChannelMembersState> {
 
     if (!_mqtt.isConnected) {
       try {
-        await _mqtt.connect(clientId: 'poc_pecek_$myUserId');
+        final rnd = Random().nextInt(9999).toString().padLeft(4, '0');
+        await _mqtt.connect(clientId: 'poc_${myUserId}_$rnd');
       } catch (_) {}
     }
 

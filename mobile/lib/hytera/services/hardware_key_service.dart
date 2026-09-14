@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -58,14 +60,12 @@ class KeyBindings {
 
 class HardwareKeyNotifier extends StateNotifier<KeyBindings> {
   static const _prefixKey = 'hytera_keybind_';
-  static const _lockThresholdMs = 2000;
-
+  static const _pttTailMs = 300;
   DateTime? _pttDownTime;
-  bool _pttLockTriggered = false;
+  Timer? _pttTailTimer;
 
   void Function()? onPttDown;
   void Function()? onPttUp;
-  void Function()? onPttLock;
   void Function()? onChannelUp;
   void Function()? onChannelDown;
 
@@ -97,11 +97,11 @@ class HardwareKeyNotifier extends StateNotifier<KeyBindings> {
   }
 
   void resetPttState() {
-    if (_pttDownTime != null && !_pttLockTriggered) {
+    _pttTailTimer?.cancel();
+    if (_pttDownTime != null) {
       onPttUp?.call();
     }
     _pttDownTime = null;
-    _pttLockTriggered = false;
   }
 
   bool handleKeyEvent(KeyEvent event) {
@@ -110,24 +110,18 @@ class HardwareKeyNotifier extends StateNotifier<KeyBindings> {
 
     switch (action) {
       case KeyAction.ptt:
-        if (event is KeyDownEvent || event is KeyRepeatEvent) {
+        if (event is KeyDownEvent) {
+          _pttTailTimer?.cancel();
           if (_pttDownTime == null) {
             _pttDownTime = DateTime.now();
-            _pttLockTriggered = false;
             onPttDown?.call();
-          } else if (!_pttLockTriggered) {
-            final elapsed = DateTime.now().difference(_pttDownTime!).inMilliseconds;
-            if (elapsed >= _lockThresholdMs) {
-              _pttLockTriggered = true;
-              onPttLock?.call();
-            }
           }
         } else if (event is KeyUpEvent) {
-          if (!_pttLockTriggered) {
-            onPttUp?.call();
-          }
           _pttDownTime = null;
-          _pttLockTriggered = false;
+          _pttTailTimer?.cancel();
+          _pttTailTimer = Timer(const Duration(milliseconds: _pttTailMs), () {
+            onPttUp?.call();
+          });
         }
         return true;
 

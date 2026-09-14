@@ -17,20 +17,31 @@ class HyteraChannelListScreen extends ConsumerStatefulWidget {
 
 class _HyteraChannelListScreenState
     extends ConsumerState<HyteraChannelListScreen> {
-  final _searchController = TextEditingController();
-  String _searchQuery = '';
-
   @override
   void initState() {
     super.initState();
     Future.microtask(
         () => ref.read(channelsProvider.notifier).fetchChannels());
+    HardwareKeyboard.instance.addHandler(_handleHardwareKey);
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    HardwareKeyboard.instance.removeHandler(_handleHardwareKey);
     super.dispose();
+  }
+
+  bool _handleHardwareKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      final key = event.logicalKey;
+      if (key == LogicalKeyboardKey.goBack ||
+          key == LogicalKeyboardKey.escape ||
+          key == LogicalKeyboardKey.browserBack) {
+        if (mounted) context.pop();
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<void> _joinChannel(Channel channel) async {
@@ -81,7 +92,7 @@ class _HyteraChannelListScreenState
                     'Channel Privat',
                     style: const TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 12,
+                      fontSize: 8,
                       color: Color(0xFF4A9EFF),
                       fontWeight: FontWeight.w700,
                     ),
@@ -93,7 +104,7 @@ class _HyteraChannelListScreenState
                 channel.name,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 10,
+                  fontSize: 7,
                   color: Color(0xFF4A6A8A),
                 ),
               ),
@@ -104,7 +115,7 @@ class _HyteraChannelListScreenState
                 autofocus: true,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 12,
+                  fontSize: 8,
                   color: Color(0xFF94A3B8),
                   letterSpacing: 2,
                 ),
@@ -112,7 +123,7 @@ class _HyteraChannelListScreenState
                   hintText: '••••••',
                   hintStyle: const TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 12,
+                    fontSize: 8,
                     color: Color(0xFF2A4A6A),
                   ),
                   filled: true,
@@ -156,7 +167,7 @@ class _HyteraChannelListScreenState
                         'BATAL',
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 11,
+                          fontSize: 8,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -181,7 +192,7 @@ class _HyteraChannelListScreenState
                         'JOIN',
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 11,
+                          fontSize: 8,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -202,126 +213,57 @@ class _HyteraChannelListScreenState
     final ptt = ref.watch(pttProvider);
     final currentChannelName = ptt.channelName;
 
-    final filtered = state.channels.where((c) {
-      if (_searchQuery.isEmpty) return true;
-      return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
+    final channels = state.channels;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B0F1A),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Container(
-              color: const Color(0xFF060C18),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => context.pop(),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.arrow_back,
-                            size: 14, color: Color(0xFF4A9EFF)),
-                        SizedBox(width: 4),
-                        Text(
-                          'KEMBALI',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 10,
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0B0F1A),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Container(
+                color: const Color(0xFF060C18),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+                child: const Text(
+                  'CHANNEL',
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 9,
+                    color: Color(0xFF4A9EFF),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: state.isLoading
+                    ? const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
                             color: Color(0xFF4A9EFF),
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  const Text(
-                    'DAFTAR CHANNEL',
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 13,
-                      color: Color(0xFF4A9EFF),
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Search
-            Container(
-              margin: const EdgeInsets.symmetric(
-                  horizontal: 9, vertical: 6),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF060910),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: const Color(0xFF1E2A3A)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.search,
-                      size: 14, color: Color(0xFF4A6A8A)),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (v) =>
-                          setState(() => _searchQuery = v),
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
-                        color: Color(0xFFDBE4F0),
+                      )
+                    : ListView.builder(
+                        itemCount: channels.length,
+                        itemBuilder: (context, index) {
+                          final channel = channels[index];
+                          final isCurrent =
+                              channel.name == currentChannelName;
+                          return _ChannelItem(
+                            channel: channel,
+                            isCurrent: isCurrent,
+                            onTap: () => _joinChannel(channel),
+                          );
+                        },
                       ),
-                      decoration: const InputDecoration.collapsed(
-                        hintText: 'Cari channel...',
-                        hintStyle: TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 11,
-                          color: Color(0xFF2A4A6A),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
-            ),
-
-            // Channel list
-            Expanded(
-              child: state.isLoading
-                  ? const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Color(0xFF4A9EFF),
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final channel = filtered[index];
-                        final isCurrent =
-                            channel.name == currentChannelName;
-                        return _ChannelItem(
-                          channel: channel,
-                          isCurrent: isCurrent,
-                          onTap: () => _joinChannel(channel),
-                        );
-                      },
-                    ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -395,7 +337,7 @@ class _ChannelItemState extends State<_ChannelItem> {
                       widget.channel.name,
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 13,
+                        fontSize: 9,
                         fontWeight: FontWeight.w700,
                         color: _focused || widget.isCurrent
                             ? const Color(0xFF4A9EFF)
@@ -432,7 +374,7 @@ class _ChannelItemState extends State<_ChannelItem> {
                     '${widget.channel.memberCount}',
                     style: const TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 11,
+                      fontSize: 8,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF4A6A8A),
                     ),
@@ -441,7 +383,7 @@ class _ChannelItemState extends State<_ChannelItem> {
                     'online',
                     style: TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 9,
+                      fontSize: 6,
                       color: Color(0xFF2A4A6A),
                     ),
                   ),
@@ -483,7 +425,7 @@ class _Badge extends StatelessWidget {
         text,
         style: TextStyle(
           fontFamily: 'monospace',
-          fontSize: 9,
+          fontSize: 6,
           fontWeight: FontWeight.w600,
           color: textColor,
         ),

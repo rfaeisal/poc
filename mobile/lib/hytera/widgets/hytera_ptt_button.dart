@@ -16,7 +16,6 @@ class HyteraPttButton extends ConsumerWidget {
     final Color bgColor;
     final Color iconColor;
     final String label;
-    final String? subLabel;
     final double opacity;
 
     if (ptt.isTransmitting && ptt.isLocked) {
@@ -24,28 +23,24 @@ class HyteraPttButton extends ConsumerWidget {
       bgColor = const Color(0xFF5A0A0A);
       iconColor = const Color(0xFFEF4444);
       label = 'LOCKED';
-      subLabel = 'TAP TO STOP';
       opacity = 1.0;
     } else if (ptt.isTransmitting) {
       borderColor = const Color(0xFFDC2626);
       bgColor = const Color(0xFF4A0808);
       iconColor = const Color(0xFFEF4444);
       label = 'TX ON';
-      subLabel = 'ON AIR';
       opacity = 1.0;
     } else if (ptt.isBusy) {
       borderColor = const Color(0xFF1E4A8A);
       bgColor = const Color(0xFF0F2040);
       iconColor = const Color(0xFF4A9EFF);
       label = 'CHANNEL';
-      subLabel = 'BUSY';
       opacity = 0.4;
     } else {
       borderColor = const Color(0xFF1E4A8A);
       bgColor = const Color(0xFF0F2040);
       iconColor = const Color(0xFF4A9EFF);
       label = 'PTT';
-      subLabel = null;
       opacity = 1.0;
     }
 
@@ -85,49 +80,22 @@ class HyteraPttButton extends ConsumerWidget {
                 color: bgColor,
                 border: Border.all(color: borderColor, width: 2),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.mic, size: 22, color: iconColor),
-                  const SizedBox(height: 1),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 10,
-                      color: ptt.isTransmitting
-                          ? const Color(0xFFEF4444)
-                          : const Color(0xFF4A6A8A),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  if (subLabel != null)
-                    Text(
-                      subLabel,
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 8,
-                        color: ptt.isTransmitting
-                            ? const Color(0xFFEF4444)
-                            : const Color(0xFF4A6A8A),
-                      ),
-                    ),
-                ],
-              ),
+              child: Icon(Icons.mic, size: 28, color: iconColor),
             ),
           ),
         ),
-        if (isIdle) ...[
-          const SizedBox(height: 5),
-          const Text(
-            'Tahan bicara · >2dtk lock',
+        if (!isIdle)
+          Text(
+            label,
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 9,
-              color: Color(0xFF2A4A6A),
+              fontSize: 7,
+              fontWeight: FontWeight.w700,
+              color: ptt.isTransmitting
+                  ? const Color(0xFFEF4444)
+                  : const Color(0xFF4A6A8A),
             ),
           ),
-        ],
       ],
     );
   }

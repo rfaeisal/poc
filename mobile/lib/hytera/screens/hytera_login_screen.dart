@@ -17,8 +17,8 @@ class HyteraLoginScreen extends ConsumerStatefulWidget {
 
 class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailController = TextEditingController(text: 'rfaeisal@gmail.com');
+  final _passwordController = TextEditingController(text: 'test1234');
   final _emailFocus = FocusNode(debugLabel: 'email');
   final _passwordFocus = FocusNode(debugLabel: 'password');
   final _buttonFocus = FocusNode(debugLabel: 'masuk');
@@ -128,43 +128,23 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.asset(
-                          'assets/images/logo_poc_smart.jpeg',
-                          width: 64,
-                          height: 64,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
                       const Text(
                         'POC-SMART',
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFFE2E8F0),
                           letterSpacing: 2,
                         ),
                       ),
-                      const SizedBox(height: 3),
-                      const Text(
-                        'DIGITAL HT NETWORK',
-                        style: TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 9,
-                          color: Color(0xFF4A9EFF),
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _buildLabel('EMAIL'),
                       const SizedBox(height: 4),
                       TextFormField(
@@ -222,28 +202,19 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
                           auth.error!,
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 9,
+                            fontSize: 6,
                             color: Color(0xFFF87171),
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ],
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 10),
                       SizedBox(
                         width: double.infinity,
                         child: _MasukButton(
                           focusNode: _buttonFocus,
                           isLoading: auth.isLoading,
                           onPressed: _login,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'POC-SMART v1.0.0',
-                        style: TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 7,
-                          color: Color(0xFF2A4A6A),
                         ),
                       ),
                     ],
@@ -264,9 +235,8 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
         text,
         style: const TextStyle(
           fontFamily: 'monospace',
-          fontSize: 9,
+          fontSize: 7,
           color: Color(0xFF4A6A8A),
-          letterSpacing: 0.5,
         ),
       ),
     );
@@ -274,7 +244,7 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
 
   TextStyle get _inputTextStyle => const TextStyle(
         fontFamily: 'monospace',
-        fontSize: 11,
+        fontSize: 8,
         color: Color(0xFFE2E8F0),
       );
 
@@ -282,7 +252,7 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
         hintText: hint,
         hintStyle: const TextStyle(
           fontFamily: 'monospace',
-          fontSize: 10,
+          fontSize: 7,
           color: Color(0xFF4A6A8A),
         ),
         filled: true,
@@ -304,7 +274,7 @@ class _HyteraLoginScreenState extends ConsumerState<HyteraLoginScreen> {
         ),
         errorStyle: const TextStyle(
           fontFamily: 'monospace',
-          fontSize: 8,
+          fontSize: 6,
           color: Color(0xFFF87171),
         ),
       );
@@ -375,7 +345,7 @@ class _MasukButtonState extends State<_MasukButton> {
               'MASUK',
               style: TextStyle(
                 fontFamily: 'monospace',
-                fontSize: 11,
+                fontSize: 9,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1,
               ),

@@ -8,13 +8,21 @@ class AuthInterceptor extends QueuedInterceptor {
   final Dio _dio;
   final AuthStorage _authStorage;
   final VoidCallback onAuthFailure;
+  late final Dio _refreshDio;
 
   AuthInterceptor({
     required Dio dio,
     required AuthStorage authStorage,
     required this.onAuthFailure,
   })  : _dio = dio,
-        _authStorage = authStorage;
+        _authStorage = authStorage {
+    _refreshDio = Dio(BaseOptions(
+      baseUrl: dio.options.baseUrl,
+      connectTimeout: dio.options.connectTimeout,
+      receiveTimeout: dio.options.receiveTimeout,
+      headers: {'Content-Type': 'application/json'},
+    ));
+  }
 
   @override
   void onRequest(
@@ -41,10 +49,9 @@ class AuthInterceptor extends QueuedInterceptor {
     }
 
     try {
-      final response = await _dio.post(
+      final response = await _refreshDio.post(
         ApiEndpoints.refresh,
         data: {'refreshToken': refreshToken},
-        options: Options(headers: {'Authorization': ''}),
       );
 
       final newAccessToken = response.data['accessToken'] as String;

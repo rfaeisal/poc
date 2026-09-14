@@ -25,11 +25,11 @@ GoRoute(
           path: '/pengaturan',
           builder: (context, state) => const HyteraPengaturanScreen(),
         ),
-        GoRoute(
-          path: '/echo-test',
-          builder: (context, state) => const HyteraEchoTestScreen(),
-        ),
       ],
+    ),
+    GoRoute(
+      path: '/echo-test',
+      builder: (context, state) => const HyteraEchoTestScreen(),
     ),
     GoRoute(
       path: '/channel-list',

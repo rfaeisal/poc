@@ -28,10 +28,9 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             'PENGATURAN',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 13,
+              fontSize: 9,
               color: Color(0xFF4A9EFF),
               fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
             ),
           ),
         ),
@@ -47,50 +46,24 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             size: 18,
             color: Color(0xFF4A6A8A),
           ),
-          onTap: () => context.go('/echo-test'),
+          onTap: () => context.push('/echo-test'),
         ),
 
         // AUDIO
         _SectionHeader(title: 'AUDIO'),
-        _FocusableSettingItem(
+        _FocusableGainItem(
           icon: Icons.volume_up,
           name: 'RX Gain',
-          description: 'Volume suara masuk',
-          trailing: Text(
-            _gainLabel(settings.speakerGain),
-            style: const TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 11,
-              color: Color(0xFF4A9EFF),
-            ),
-          ),
-        ),
-        _SliderRow(
           value: settings.speakerGain,
           onChanged: (v) =>
               ref.read(settingsProvider.notifier).setSpeakerGain(v),
-          minLabel: '-10 dB',
-          maxLabel: '+10 dB',
         ),
-        _FocusableSettingItem(
+        _FocusableGainItem(
           icon: Icons.mic,
           name: 'TX Gain',
-          description: 'Volume mikrofon',
-          trailing: Text(
-            _gainLabel(settings.micGain),
-            style: const TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 11,
-              color: Color(0xFF4A9EFF),
-            ),
-          ),
-        ),
-        _SliderRow(
           value: settings.micGain,
           onChanged: (v) =>
               ref.read(settingsProvider.notifier).setMicGain(v),
-          minLabel: '-10 dB',
-          maxLabel: '+10 dB',
         ),
 
         // MAPPING TOMBOL FISIK
@@ -104,12 +77,11 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             ),
           ),
           child: const Text(
-            'Ketuk badge → tekan tombol fisik untuk set. Tahan lama untuk hapus.',
+            'Ketuk → tekan tombol fisik. Tahan untuk hapus.',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 9,
+              fontSize: 6,
               color: Color(0xFF2A4A6A),
-              height: 1.4,
             ),
           ),
         ),
@@ -177,7 +149,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
                       'Terhubung',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 10,
+                        fontSize: 7,
                         color: Color(0xFF4ADE80),
                       ),
                     ),
@@ -230,7 +202,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 10,
+                  fontSize: 6,
                   color: Color(0xFF1E3A5F),
                 ),
               ),
@@ -251,18 +223,17 @@ class HyteraPengaturanScreen extends ConsumerWidget {
           'KELUAR APLIKASI',
           style: TextStyle(
             fontFamily: 'monospace',
-            fontSize: 14,
+            fontSize: 9,
             fontWeight: FontWeight.w700,
             color: Color(0xFFE2E8F0),
           ),
         ),
         content: const Text(
-          'Aplikasi akan ditutup sepenuhnya. PTT tidak akan aktif sampai aplikasi dibuka kembali.',
+          'Aplikasi akan ditutup. PTT tidak aktif sampai dibuka kembali.',
           style: TextStyle(
             fontFamily: 'monospace',
-            fontSize: 12,
+            fontSize: 7,
             color: Color(0xFF94A3B8),
-            height: 1.4,
           ),
         ),
         actions: [
@@ -272,7 +243,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
               'BATAL',
               style: TextStyle(
                 fontFamily: 'monospace',
-                fontSize: 12,
+                fontSize: 8,
                 color: Color(0xFF4A9EFF),
               ),
             ),
@@ -286,7 +257,7 @@ class HyteraPengaturanScreen extends ConsumerWidget {
               'KELUAR',
               style: TextStyle(
                 fontFamily: 'monospace',
-                fontSize: 12,
+                fontSize: 8,
                 color: Color(0xFFEF4444),
               ),
             ),
@@ -296,10 +267,6 @@ class HyteraPengaturanScreen extends ConsumerWidget {
     );
   }
 
-  static String _gainLabel(double value) {
-    final db = (value * 20 - 10).round();
-    return '${db >= 0 ? "+" : ""}$db dB';
-  }
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -320,9 +287,8 @@ class _SectionHeader extends StatelessWidget {
         title,
         style: const TextStyle(
           fontFamily: 'monospace',
-          fontSize: 10,
+          fontSize: 7,
           color: Color(0xFF2A4A6A),
-          letterSpacing: 0.8,
         ),
       ),
     );
@@ -409,7 +375,7 @@ class _FocusableSettingItemState extends State<_FocusableSettingItem> {
                       widget.name,
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 12,
+                        fontSize: 9,
                         fontWeight: FontWeight.w700,
                         color: _focused
                             ? const Color(0xFFDBE4F0)
@@ -418,12 +384,11 @@ class _FocusableSettingItemState extends State<_FocusableSettingItem> {
                                 : const Color(0xFF94A3B8),
                       ),
                     ),
-                    const SizedBox(height: 1),
                     Text(
                       widget.description,
                       style: const TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 10,
+                        fontSize: 6,
                         color: Color(0xFF2A4A6A),
                       ),
                     ),
@@ -509,19 +474,18 @@ class _FocusableToggleItemState extends State<_FocusableToggleItem> {
                       widget.name,
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 12,
+                        fontSize: 9,
                         fontWeight: FontWeight.w700,
                         color: _focused
                             ? const Color(0xFFDBE4F0)
                             : const Color(0xFF94A3B8),
                       ),
                     ),
-                    const SizedBox(height: 1),
                     Text(
                       widget.description,
                       style: const TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 10,
+                        fontSize: 6,
                         color: Color(0xFF2A4A6A),
                       ),
                     ),
@@ -686,19 +650,18 @@ class _KeyMappingItemState extends ConsumerState<_KeyMappingItem> {
                       widget.name,
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 12,
+                        fontSize: 9,
                         fontWeight: FontWeight.w700,
                         color: _focused
                             ? const Color(0xFFDBE4F0)
                             : const Color(0xFF94A3B8),
                       ),
                     ),
-                    const SizedBox(height: 1),
                     Text(
                       widget.description,
                       style: const TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 10,
+                        fontSize: 6,
                         color: Color(0xFF2A4A6A),
                       ),
                     ),
@@ -731,7 +694,7 @@ class _KeyMappingItemState extends ConsumerState<_KeyMappingItem> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 11,
+                    fontSize: 7,
                     fontWeight: FontWeight.w700,
                     color: _listening
                         ? const Color(0xFFFBBF24)
@@ -749,68 +712,97 @@ class _KeyMappingItemState extends ConsumerState<_KeyMappingItem> {
   }
 }
 
-class _SliderRow extends StatelessWidget {
+class _FocusableGainItem extends StatefulWidget {
+  final IconData icon;
+  final String name;
   final double value;
   final ValueChanged<double> onChanged;
-  final String minLabel;
-  final String maxLabel;
 
-  const _SliderRow({
+  const _FocusableGainItem({
+    required this.icon,
+    required this.name,
     required this.value,
     required this.onChanged,
-    required this.minLabel,
-    required this.maxLabel,
   });
 
   @override
+  State<_FocusableGainItem> createState() => _FocusableGainItemState();
+}
+
+class _FocusableGainItemState extends State<_FocusableGainItem> {
+  bool _focused = false;
+
+  String get _label {
+    final db = (widget.value * 20 - 10).round();
+    return '${db >= 0 ? "+" : ""}$db dB';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: const BoxDecoration(
-        color: Color(0xFF060C18),
-        border: Border(
-          bottom: BorderSide(color: Color(0xFF0A1020)),
+    return Focus(
+      onFocusChange: (f) => setState(() => _focused = f),
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+        final key = event.logicalKey;
+        if (key == LogicalKeyboardKey.arrowRight) {
+          final next = (widget.value + 0.05).clamp(0.0, 1.0);
+          widget.onChanged(next);
+          return KeyEventResult.handled;
+        }
+        if (key == LogicalKeyboardKey.arrowLeft) {
+          final next = (widget.value - 0.05).clamp(0.0, 1.0);
+          widget.onChanged(next);
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+        decoration: BoxDecoration(
+          color: _focused ? const Color(0xFF0F1E2E) : Colors.transparent,
+          border: Border(
+            bottom: const BorderSide(color: Color(0xFF0A1020)),
+            left: _focused
+                ? const BorderSide(color: Color(0xFF4A9EFF), width: 3)
+                : BorderSide.none,
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                minLabel,
-                style: const TextStyle(
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F1E2E),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(widget.icon, size: 14,
+                  color: const Color(0xFF4A9EFF)),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                widget.name,
+                style: TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 10,
-                  color: Color(0xFF2A4A6A),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: _focused
+                      ? const Color(0xFFDBE4F0)
+                      : const Color(0xFF94A3B8),
                 ),
               ),
-              Text(
-                maxLabel,
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 10,
-                  color: Color(0xFF4A9EFF),
-                ),
+            ),
+            Text(
+              _focused ? '◄ $_label ►' : _label,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 7,
+                color: Color(0xFF4A9EFF),
               ),
-            ],
-          ),
-          SliderTheme(
-            data: SliderThemeData(
-              activeTrackColor: const Color(0xFF4A9EFF),
-              inactiveTrackColor: const Color(0xFF0F2040),
-              thumbColor: const Color(0xFF4A9EFF),
-              thumbShape:
-                  const RoundSliderThumbShape(enabledThumbRadius: 6),
-              trackHeight: 3,
-              overlayShape: SliderComponentShape.noOverlay,
             ),
-            child: Slider(
-              value: value,
-              onChanged: onChanged,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

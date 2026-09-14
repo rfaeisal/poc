@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/talk_timer.dart';
 import '../../features/echo_test/providers/echo_test_provider.dart';
+import '../services/hardware_key_service.dart';
 
 class HyteraEchoTestScreen extends ConsumerStatefulWidget {
   const HyteraEchoTestScreen({super.key});
@@ -13,16 +16,50 @@ class HyteraEchoTestScreen extends ConsumerStatefulWidget {
 }
 
 class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
+  void Function()? _savedPttDown;
+  void Function()? _savedPttUp;
+  late final HardwareKeyNotifier _keyNotifier;
+
   @override
   void initState() {
     super.initState();
+    _keyNotifier = ref.read(hardwareKeyProvider.notifier);
     Future.microtask(() => ref.read(echoTestProvider.notifier).start());
+    HardwareKeyboard.instance.addHandler(_handleBackKey);
+    _overridePttCallbacks();
+  }
+
+  void _overridePttCallbacks() {
+    _savedPttDown = _keyNotifier.onPttDown;
+    _savedPttUp = _keyNotifier.onPttUp;
+    _keyNotifier.onPttDown = () {
+      ref.read(echoTestProvider.notifier).startTransmit();
+    };
+    _keyNotifier.onPttUp = () {
+      ref.read(echoTestProvider.notifier).stopTransmit();
+    };
   }
 
   @override
   void dispose() {
+    _keyNotifier.onPttDown = _savedPttDown;
+    _keyNotifier.onPttUp = _savedPttUp;
+    HardwareKeyboard.instance.removeHandler(_handleBackKey);
     ref.read(echoTestProvider.notifier).stop();
     super.dispose();
+  }
+
+  bool _handleBackKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      final key = event.logicalKey;
+      if (key == LogicalKeyboardKey.goBack ||
+          key == LogicalKeyboardKey.escape ||
+          key == LogicalKeyboardKey.browserBack) {
+        if (mounted) context.pop();
+        return true;
+      }
+    }
+    return false;
   }
 
   @override
@@ -42,19 +79,14 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                 bottom: BorderSide(color: Color(0xFF0A1020)),
               ),
             ),
-            child: const Row(
-              children: [
-                Text(
-                  'ECHO TEST',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 13,
-                    color: Color(0xFF4A9EFF),
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
+            child: const Text(
+              'ECHO TEST',
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 9,
+                color: Color(0xFF4A9EFF),
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
 
@@ -86,7 +118,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
             'MENGHUBUNGKAN...',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 12,
+              fontSize: 8,
               color: Color(0xFF4A9EFF),
             ),
           ),
@@ -104,7 +136,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
             echo.error ?? 'Gagal',
             style: const TextStyle(
               fontFamily: 'monospace',
-              fontSize: 11,
+              fontSize: 8,
               color: Color(0xFFEF4444),
             ),
             textAlign: TextAlign.center,
@@ -123,7 +155,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                 'COBA LAGI',
                 style: TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 11,
+                  fontSize: 8,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF4A9EFF),
                 ),
@@ -151,7 +183,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
             'MEMULAI...',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 12,
+              fontSize: 8,
               color: Color(0xFF4A9EFF),
             ),
           ),
@@ -166,35 +198,27 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Latency
-        SizedBox(
-          height: 52,
-          child: echo.latencyMs != null
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${echo.latencyMs} ms',
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: _latencyColor(echo.latencyMs),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'ROUND TRIP',
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 10,
-                        color: Color(0xFF2A4A6A),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                )
-              : const SizedBox.shrink(),
-        ),
+        if (echo.latencyMs != null) ...[
+          Text(
+            '${echo.latencyMs} ms',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: _latencyColor(echo.latencyMs),
+            ),
+          ),
+          const Text(
+            'ROUND TRIP',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 6,
+              color: Color(0xFF2A4A6A),
+            ),
+          ),
+          const SizedBox(height: 6),
+        ] else
+          const SizedBox(height: 8),
 
         // PTT Button
         GestureDetector(
@@ -208,8 +232,8 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
               ? null
               : () => ref.read(echoTestProvider.notifier).stopTransmit(),
           child: Container(
-            width: 76,
-            height: 76,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isTransmitting
@@ -251,7 +275,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                   isActive: true,
                   style: const TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 15,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF4ADE80),
                   ),
@@ -264,16 +288,16 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                           _fmtDuration(echo.transmitDuration),
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 13,
+                            fontSize: 9,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF4ADE80),
                           ),
                         ),
                         const Text(
-                          ' → ',
+                          '→',
                           style: TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 13,
+                            fontSize: 9,
                             color: Color(0xFF4A6A8A),
                           ),
                         ),
@@ -281,7 +305,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                           _fmtDuration(echo.playbackDuration),
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 13,
+                            fontSize: 9,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFFFBBF24),
                           ),
@@ -303,7 +327,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
                     : 'Tekan & tahan untuk bicara',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 11,
+              fontSize: 8,
               color: isTransmitting
                   ? const Color(0xFF4ADE80)
                   : isPlaying
