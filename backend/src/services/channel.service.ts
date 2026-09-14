@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { prisma } from '../lib/prisma';
+import { listParticipants } from './livekit.service';
 
 export async function createChannel(data: {
   name: string;
@@ -100,12 +101,28 @@ export async function leaveChannel(channelId: string, userId: string) {
 }
 
 export async function getChannelMembers(channelId: string) {
-  return prisma.channelMember.findMany({
+  const channel = await prisma.channel.findUnique({ where: { id: channelId } });
+  const members = await prisma.channelMember.findMany({
     where: { channelId },
     include: {
       user: { include: { profile: true } },
     },
   });
+
+  let onlineUserIds = new Set<string>();
+  if (channel) {
+    try {
+      const participants = await listParticipants(channel.livekitRoomId);
+      onlineUserIds = new Set(participants.map((p) => p.identity));
+    } catch {
+      // Room may not exist yet
+    }
+  }
+
+  return members.map((m) => ({
+    ...m,
+    isOnline: onlineUserIds.has(m.userId),
+  }));
 }
 
 export async function updateMemberRole(channelId: string, userId: string, role: 'MEMBER' | 'MODERATOR' | 'ADMIN') {

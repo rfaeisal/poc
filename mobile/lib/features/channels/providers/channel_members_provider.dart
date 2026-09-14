@@ -124,13 +124,21 @@ class ChannelMembersNotifier extends StateNotifier<ChannelMembersState> {
     final updated = Map<String, ChannelMember>.from(state.members);
 
     if (action == 'join') {
-      updated[userId] = ChannelMember(
-        userId: userId,
-        callsign: callsign,
-        isOnline: true,
-      );
+      final existing = updated[userId];
+      if (existing != null) {
+        updated[userId] = existing.copyWith(isOnline: true);
+      } else {
+        updated[userId] = ChannelMember(
+          userId: userId,
+          callsign: callsign,
+          isOnline: true,
+        );
+      }
     } else if (action == 'leave') {
-      updated.remove(userId);
+      final existing = updated[userId];
+      if (existing != null) {
+        updated[userId] = existing.copyWith(isOnline: false);
+      }
     }
 
     state = state.copyWith(members: updated);

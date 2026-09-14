@@ -23,7 +23,7 @@ class ChannelMember {
       callsign: profile['callsign'] as String? ?? '???',
       name: profile['name'] as String?,
       role: json['role'] as String?,
-      isOnline: true,
+      isOnline: json['isOnline'] as bool? ?? false,
     );
   }
 
