@@ -22,18 +22,25 @@ class _ChannelListScreenState extends ConsumerState<ChannelListScreen> {
   }
 
   Future<void> _joinChannel(Channel channel) async {
-    String? password;
+    var result = await ref
+        .read(channelsProvider.notifier)
+        .joinChannel(channel.id);
 
-    if (channel.isPrivate) {
-      password = await _showPasswordDialog();
-      if (password == null) return;
+    if (!mounted) return;
+
+    if (result == null && channel.isPrivate) {
+      final error = ref.read(channelsProvider).error;
+      if (error != null && error.contains('Password required')) {
+        final password = await _showPasswordDialog();
+        if (password == null) return;
+        result = await ref
+            .read(channelsProvider.notifier)
+            .joinChannel(channel.id, password: password);
+        if (!mounted) return;
+      }
     }
 
-    final result = await ref
-        .read(channelsProvider.notifier)
-        .joinChannel(channel.id, password: password);
-
-    if (!mounted || result == null) {
+    if (result == null) {
       if (mounted) {
         final error = ref.read(channelsProvider).error;
         if (error != null) {

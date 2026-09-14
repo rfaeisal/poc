@@ -45,17 +45,24 @@ class _HyteraChannelListScreenState
   }
 
   Future<void> _joinChannel(Channel channel) async {
-    String? password;
-    if (channel.isPrivate) {
-      password = await _showPasswordDialog(channel);
-      if (password == null) return;
-    }
-
-    final result = await ref
+    var result = await ref
         .read(channelsProvider.notifier)
-        .joinChannel(channel.id, password: password);
+        .joinChannel(channel.id);
 
     if (!mounted) return;
+
+    if (result == null && channel.isPrivate) {
+      final error = ref.read(channelsProvider).error;
+      if (error != null && error.contains('Password required')) {
+        final password = await _showPasswordDialog(channel);
+        if (password == null) return;
+        result = await ref
+            .read(channelsProvider.notifier)
+            .joinChannel(channel.id, password: password);
+        if (!mounted) return;
+      }
+    }
+
     if (result != null) {
       context.pop(result);
     } else {
