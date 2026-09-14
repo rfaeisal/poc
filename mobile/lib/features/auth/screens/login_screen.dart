@@ -60,7 +60,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'POC-Pecek',
+                    'POC-SMART',
                     style:
                         Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
@@ -121,11 +121,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             )
                           : const Text('Login'),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => context.go('/register'),
-                    child: const Text('Belum punya akun? Register'),
                   ),
                 ],
               ),

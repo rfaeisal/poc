@@ -87,7 +87,7 @@ class _ChannelListScreenState extends ConsumerState<ChannelListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('POC-Pecek'),
+        title: const Text('POC-SMART'),
         actions: [
           if (auth.user?.profile.callsign != null)
             Padding(
