@@ -10,7 +10,6 @@ import '../../auth/providers/auth_provider.dart';
 import '../../channels/models/channel.dart';
 import '../../channels/models/channel_member.dart';
 import '../../channels/providers/channel_members_provider.dart';
-import '../../channels/providers/channels_provider.dart';
 import '../../map/providers/location_provider.dart';
 import '../../ptt/providers/ptt_provider.dart';
 import '../../ptt/widgets/ptt_button.dart';
@@ -115,9 +114,6 @@ class _ChannelDetailScreenState extends ConsumerState<ChannelDetailScreen> {
   Future<void> _leaveChannel() async {
     await ref.read(pttProvider.notifier).disconnect();
     await ref.read(channelMembersProvider.notifier).leaveChannel();
-    await ref
-        .read(channelsProvider.notifier)
-        .leaveChannel(widget.channelId);
     await ref.read(locationProvider.notifier).stopSharing();
     PttForegroundService.stop();
     WakelockPlus.disable();

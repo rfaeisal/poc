@@ -65,8 +65,9 @@ class ChannelsNotifier extends StateNotifier<ChannelsState> {
       return JoinChannelResult.fromJson(
           response.data as Map<String, dynamic>);
     } on DioException catch (e) {
-      final message = e.response?.data?['message'] as String? ??
-          'Gagal join channel.';
+      final data = e.response?.data;
+      final message = (data is Map ? (data['error'] ?? data['message']) as String? : null)
+          ?? 'Gagal join channel.';
       state = state.copyWith(error: message);
       return null;
     }

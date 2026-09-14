@@ -99,12 +99,6 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
     await ref.read(channelMembersProvider.notifier).leaveChannel();
     await ref.read(locationProvider.notifier).stopSharing();
 
-    if (_joinResult != null) {
-      await ref
-          .read(channelsProvider.notifier)
-          .leaveChannel(_joinResult!.channel.id);
-    }
-
     _joinResult = newResult;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('hytera_last_channel', newResult.channel.id);
