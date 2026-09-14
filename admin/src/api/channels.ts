@@ -49,3 +49,12 @@ export async function kickMember(channelId: string, userId: string): Promise<voi
 export async function muteMember(channelId: string, userId: string): Promise<void> {
   await api.post(`/channels/${channelId}/members/${userId}/mute`);
 }
+
+export async function addMember(channelId: string, userId: string, role: string = 'MEMBER'): Promise<{ member: ChannelMember }> {
+  const { data } = await api.post(`/admin/channels/${channelId}/members`, { userId, role });
+  return data;
+}
+
+export async function removeMember(channelId: string, userId: string): Promise<void> {
+  await api.delete(`/admin/channels/${channelId}/members/${userId}`);
+}

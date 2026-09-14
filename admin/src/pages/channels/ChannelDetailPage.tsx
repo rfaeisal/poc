@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserX, VolumeX } from 'lucide-react';
-import { getChannel, updateChannel, deleteChannel, getChannelMembers, kickMember, muteMember } from '@/api/channels';
+import { UserX, VolumeX, UserPlus, Trash2 } from 'lucide-react';
+import { getChannel, updateChannel, deleteChannel, getChannelMembers, kickMember, muteMember, addMember, removeMember } from '@/api/channels';
+import { getUsers } from '@/api/users';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { format } from 'date-fns';
 
@@ -26,6 +27,44 @@ export function ChannelDetailPage() {
 
   const channel = channelData?.channel;
   const members = membersData?.members ?? [];
+
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedRole, setSelectedRole] = useState<'MEMBER' | 'MODERATOR' | 'ADMIN'>('MEMBER');
+  const [addError, setAddError] = useState('');
+
+  const { data: usersData } = useQuery({
+    queryKey: ['users-search', searchQuery],
+    queryFn: () => getUsers({ q: searchQuery || undefined, limit: 50 }),
+    enabled: showAddMember,
+  });
+
+  const memberUserIds = new Set(members.map((m) => m.userId));
+  const availableUsers = (usersData?.users ?? []).filter((u) => !memberUserIds.has(u.id));
+
+  const addMemberMutation = useMutation({
+    mutationFn: () => addMember(id!, selectedUserId, selectedRole),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['channel-members', id] });
+      queryClient.invalidateQueries({ queryKey: ['channel', id] });
+      setSelectedUserId('');
+      setSelectedRole('MEMBER');
+      setAddError('');
+      setShowAddMember(false);
+    },
+    onError: (err: Error & { response?: { data?: { error?: string } } }) => {
+      setAddError(err.response?.data?.error ?? 'Failed to add member');
+    },
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: (userId: string) => removeMember(id!, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['channel-members', id] });
+      queryClient.invalidateQueries({ queryKey: ['channel', id] });
+    },
+  });
 
   const [form, setForm] = useState({
     name: '',
@@ -211,7 +250,75 @@ export function ChannelDetailPage() {
 
       {/* Members list */}
       <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Members ({members.length})</h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">Members ({members.length})</h2>
+          <button
+            onClick={() => setShowAddMember(!showAddMember)}
+            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            <UserPlus size={14} />
+            Add Member
+          </button>
+        </div>
+
+        {showAddMember && (
+          <div className="mb-4 space-y-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Search User</label>
+              <input
+                type="text"
+                placeholder="Search by callsign, name, or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Select User</label>
+              <select
+                value={selectedUserId}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">-- Pilih user --</option>
+                {availableUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.profile?.callsign ?? '?'} — {u.profile?.name ?? u.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Role</label>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value as 'MEMBER' | 'MODERATOR' | 'ADMIN')}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="MEMBER">Member</option>
+                <option value="MODERATOR">Moderator</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+            {addError && <p className="text-sm text-red-600">{addError}</p>}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => { setShowAddMember(false); setAddError(''); }}
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => addMemberMutation.mutate()}
+                disabled={!selectedUserId || addMemberMutation.isPending}
+                className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {addMemberMutation.isPending ? 'Adding...' : 'Add'}
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2">
           {members.map((m) => (
             <div key={m.id} className="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-3">
@@ -261,7 +368,7 @@ export function ChannelDetailPage() {
                   </ConfirmDialog>
                   <ConfirmDialog
                     title="Kick Member"
-                    message={`Remove ${m.user.profile?.callsign ?? m.user.email} from this channel?`}
+                    message={`Kick ${m.user.profile?.callsign ?? m.user.email} dari room LiveKit?`}
                     confirmLabel="Kick"
                     variant="danger"
                     onConfirm={async () => {
@@ -272,10 +379,29 @@ export function ChannelDetailPage() {
                     {(open) => (
                       <button
                         onClick={open}
-                        title="Kick member"
+                        title="Kick from room"
                         className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
                       >
                         <UserX size={16} />
+                      </button>
+                    )}
+                  </ConfirmDialog>
+                  <ConfirmDialog
+                    title="Remove Member"
+                    message={`Hapus ${m.user.profile?.callsign ?? m.user.email} dari channel ini?`}
+                    confirmLabel="Remove"
+                    variant="danger"
+                    onConfirm={async () => {
+                      await removeMemberMutation.mutateAsync(m.userId);
+                    }}
+                  >
+                    {(open) => (
+                      <button
+                        onClick={open}
+                        title="Remove from channel"
+                        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 size={16} />
                       </button>
                     )}
                   </ConfirmDialog>
