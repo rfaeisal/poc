@@ -152,7 +152,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 192M
+          memory: 320M
 
   # ─────────────────────────────────────────
   # Nginx — Reverse proxy + SSL
