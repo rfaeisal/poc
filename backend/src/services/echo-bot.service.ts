@@ -57,6 +57,7 @@ export async function startEchoBot(roomName: string, userId: string): Promise<vo
 
     isBuffering = true;
     audioBuffer = [];
+    const rxStart = Date.now();
 
     const stream = new AudioStream(track);
     const reader = stream.getReader();
@@ -76,6 +77,7 @@ export async function startEchoBot(roomName: string, userId: string): Promise<vo
       // stream ended
     } finally {
       reader.releaseLock();
+      console.log(`[EchoBot] RX done: ${audioBuffer.length} frames in ${Date.now() - rxStart}ms`);
     }
   });
 
@@ -93,16 +95,22 @@ export async function startEchoBot(roomName: string, userId: string): Promise<vo
       const firstFrame = frames[0];
       const srcRate = firstFrame.sampleRate || SAMPLE_RATE;
       const srcChannels = firstFrame.channels || NUM_CHANNELS;
-      console.log(`[EchoBot] Playback: ${frames.length} frames, ${srcRate}Hz, ${srcChannels}ch`);
+      const expectedMs = (frames.length * firstFrame.samplesPerChannel / srcRate) * 1000;
+      console.log(`[EchoBot] Playback: ${frames.length} frames, ${srcRate}Hz, ${srcChannels}ch, expected=${Math.round(expectedMs)}ms`);
       const source = new AudioSource(srcRate, srcChannels);
       const localTrack = LocalAudioTrack.createAudioTrack('echo-playback', source);
       const pubOptions = new TrackPublishOptions({ source: TrackSource.SOURCE_MICROPHONE });
-      const publication = await room.localParticipant!.publishTrack(localTrack, pubOptions);
 
+      const pubStart = Date.now();
+      const publication = await room.localParticipant!.publishTrack(localTrack, pubOptions);
+      console.log(`[EchoBot] publishTrack took ${Date.now() - pubStart}ms`);
+
+      const captureStart = Date.now();
       for (const frame of frames) {
         await source.captureFrame(frame);
       }
       await source.waitForPlayout();
+      console.log(`[EchoBot] captureFrame+playout took ${Date.now() - captureStart}ms (expected ~${Math.round(expectedMs)}ms)`);
 
       await room.localParticipant!.unpublishTrack(publication.sid!);
       await localTrack.close();
