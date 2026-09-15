@@ -25,6 +25,7 @@ class _HyteraStatusBarState extends State<HyteraStatusBar> {
   int _batteryLevel = 0;
   int? _latencyMs;
   int? _signalDbm;
+  int? _signalLevel;
   Timer? _pingTimer;
   late final String _pingHost;
   late final int _pingPort;
@@ -62,10 +63,20 @@ class _HyteraStatusBarState extends State<HyteraStatusBar> {
 
   Future<void> _loadSignal() async {
     try {
-      final dbm = await _platform.invokeMethod<int>('getSignalStrength');
-      if (mounted) setState(() => _signalDbm = dbm);
+      final result = await _platform.invokeMethod<Map>('getSignalStrength');
+      if (result != null && mounted) {
+        setState(() {
+          _signalDbm = result['dbm'] as int?;
+          _signalLevel = result['level'] as int?;
+        });
+      } else if (mounted) {
+        setState(() {
+          _signalDbm = null;
+          _signalLevel = null;
+        });
+      }
     } catch (_) {
-      if (mounted) setState(() => _signalDbm = null);
+      if (mounted) setState(() { _signalDbm = null; _signalLevel = null; });
     }
   }
 
@@ -86,17 +97,20 @@ class _HyteraStatusBarState extends State<HyteraStatusBar> {
   }
 
   IconData _signalIcon() {
-    if (_signalDbm == null) return Icons.signal_cellular_off;
-    if (_signalDbm! > -70) return Icons.signal_cellular_4_bar;
-    if (_signalDbm! > -80) return Icons.signal_cellular_alt_2_bar;
-    if (_signalDbm! > -100) return Icons.signal_cellular_alt_1_bar;
-    return Icons.signal_cellular_0_bar;
+    if (_signalLevel == null) return Icons.signal_cellular_off;
+    switch (_signalLevel!) {
+      case 4: return Icons.signal_cellular_4_bar;
+      case 3: return Icons.signal_cellular_alt;
+      case 2: return Icons.signal_cellular_alt_2_bar;
+      case 1: return Icons.signal_cellular_alt_1_bar;
+      default: return Icons.signal_cellular_0_bar;
+    }
   }
 
   Color _signalColor() {
-    if (_signalDbm == null) return const Color(0xFF516079);
-    if (_signalDbm! > -80) return const Color(0xFF4ADE80);
-    if (_signalDbm! > -100) return const Color(0xFFFBBF24);
+    if (_signalLevel == null) return const Color(0xFF516079);
+    if (_signalLevel! >= 3) return const Color(0xFF4ADE80);
+    if (_signalLevel! >= 2) return const Color(0xFFFBBF24);
     return const Color(0xFFEF4444);
   }
 

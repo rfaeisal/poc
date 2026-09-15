@@ -127,7 +127,7 @@ class MainActivity : FlutterActivity() {
                         result.success(true)
                     }
                     "getSignalStrength" -> {
-                        result.success(getSignalDbm())
+                        result.success(getSignalInfo())
                     }
                     "maxVolume" -> {
                         setMaxVolume()
@@ -354,7 +354,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun getSignalDbm(): Int? {
+    private fun getSignalInfo(): Map<String, Any>? {
         val wifiDbm = try {
             val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             @Suppress("DEPRECATION")
@@ -362,12 +362,24 @@ class MainActivity : FlutterActivity() {
             if (rssi != -127) rssi else null
         } catch (_: Exception) { null }
 
-        if (wifiDbm != null) return wifiDbm
+        if (wifiDbm != null) {
+            val level = when {
+                wifiDbm > -50 -> 4
+                wifiDbm > -60 -> 3
+                wifiDbm > -70 -> 2
+                wifiDbm > -80 -> 1
+                else -> 0
+            }
+            return mapOf("dbm" to wifiDbm, "level" to level, "type" to "wifi")
+        }
 
         return try {
             val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                tm.signalStrength?.cellSignalStrengths?.firstOrNull()?.dbm
+                val css = tm.signalStrength?.cellSignalStrengths?.firstOrNull()
+                if (css != null) {
+                    mapOf("dbm" to css.dbm, "level" to css.level, "type" to "cellular")
+                } else null
             } else null
         } catch (_: Exception) { null }
     }
