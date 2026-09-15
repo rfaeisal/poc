@@ -58,7 +58,7 @@ export async function startEchoBot(roomName: string, userId: string): Promise<vo
     isBuffering = true;
     audioBuffer = [];
 
-    const stream = new AudioStream(track, SAMPLE_RATE, NUM_CHANNELS);
+    const stream = new AudioStream(track);
     const reader = stream.getReader();
     let logged = false;
 
