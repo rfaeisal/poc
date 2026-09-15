@@ -137,6 +137,10 @@ class MainActivity : FlutterActivity() {
                         ensureAudioOutput()
                         result.success(true)
                     }
+                    "resetAudioForTransmit" -> {
+                        resetAudioForTransmit()
+                        result.success(true)
+                    }
                     "isAccessibilityEnabled" -> {
                         result.success(isAccessibilityServiceEnabled())
                     }
@@ -375,6 +379,12 @@ class MainActivity : FlutterActivity() {
         val maxVoice = am.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL)
         am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, maxVoice, 0)
         am.isSpeakerphoneOn = true
+    }
+
+    private fun resetAudioForTransmit() {
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        am.mode = AudioManager.MODE_NORMAL
+        am.isSpeakerphoneOn = false
     }
 
     private fun ensureAudioOutput() {

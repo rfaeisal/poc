@@ -50,10 +50,17 @@ export async function startEchoBot(roomName: string, userId: string): Promise<vo
 
   let audioBuffer: AudioFrame[] = [];
   let isBuffering = false;
+  let activeReader: ReadableStreamDefaultReader<AudioFrame> | null = null;
 
   room.on(RoomEvent.TrackSubscribed, async (track, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
     if (track.kind !== TrackKind.KIND_AUDIO) return;
     if (participant.identity === `echo-bot-${userId}`) return;
+
+    // Cancel any previous reader to prevent double-buffering
+    if (activeReader) {
+      try { activeReader.cancel(); } catch {}
+      activeReader = null;
+    }
 
     isBuffering = true;
     audioBuffer = [];
@@ -61,6 +68,7 @@ export async function startEchoBot(roomName: string, userId: string): Promise<vo
 
     const stream = new AudioStream(track);
     const reader = stream.getReader();
+    activeReader = reader;
     let logged = false;
 
     try {
@@ -74,9 +82,10 @@ export async function startEchoBot(roomName: string, userId: string): Promise<vo
         audioBuffer.push(value);
       }
     } catch {
-      // stream ended
+      // stream ended or cancelled
     } finally {
       reader.releaseLock();
+      if (activeReader === reader) activeReader = null;
       console.log(`[EchoBot] RX done: ${audioBuffer.length} frames in ${Date.now() - rxStart}ms`);
     }
   });

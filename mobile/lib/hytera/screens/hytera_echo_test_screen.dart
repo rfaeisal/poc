@@ -8,6 +8,8 @@ import '../../features/echo_test/providers/echo_test_provider.dart';
 import '../../features/ptt/providers/ptt_provider.dart';
 import '../services/hardware_key_service.dart';
 
+const _kioskChannel = MethodChannel('com.fakhriez.poc_ptx/kiosk');
+
 class HyteraEchoTestScreen extends ConsumerStatefulWidget {
   const HyteraEchoTestScreen({super.key});
 
@@ -30,6 +32,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
     HyteraEchoTestScreen.isActive = true;
     Future.microtask(() async {
       await ref.read(livekitServiceProvider).disconnect();
+      try { await _kioskChannel.invokeMethod('ensureAudioOutput'); } catch (_) {}
       ref.read(echoTestProvider.notifier).start();
     });
     HardwareKeyboard.instance.addHandler(_handleBackKey);

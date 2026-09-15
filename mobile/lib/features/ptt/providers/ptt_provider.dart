@@ -174,6 +174,7 @@ class PttNotifier extends StateNotifier<PttState> {
           if (state.currentSpeakerId == identity) {
             state = state.copyWith(clearSpeaker: true);
           }
+          try { _kioskChannel.invokeMethod('resetAudioForTransmit'); } catch (_) {}
         }
       });
   }
@@ -221,6 +222,7 @@ class PttNotifier extends StateNotifier<PttState> {
     if (state.isBusy || state.isTransmitting || !state.isConnected || _startingTransmit) return;
     _startingTransmit = true;
 
+    try { await _kioskChannel.invokeMethod('resetAudioForTransmit'); } catch (_) {}
     await _livekit.startTransmit();
     state = state.copyWith(isTransmitting: true);
 
