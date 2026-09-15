@@ -60,11 +60,16 @@ export async function startEchoBot(roomName: string, userId: string): Promise<vo
 
     const stream = new AudioStream(track, SAMPLE_RATE, NUM_CHANNELS);
     const reader = stream.getReader();
+    let logged = false;
 
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done || !isBuffering) break;
+        if (!logged) {
+          console.log(`[EchoBot] RX frame: ${value.sampleRate}Hz, ${value.channels}ch, ${value.samplesPerChannel}spc, data=${value.data.length}`);
+          logged = true;
+        }
         audioBuffer.push(value);
       }
     } catch {
@@ -85,7 +90,11 @@ export async function startEchoBot(roomName: string, userId: string): Promise<vo
     if (frames.length === 0) return;
 
     try {
-      const source = new AudioSource(SAMPLE_RATE, NUM_CHANNELS);
+      const firstFrame = frames[0];
+      const srcRate = firstFrame.sampleRate || SAMPLE_RATE;
+      const srcChannels = firstFrame.channels || NUM_CHANNELS;
+      console.log(`[EchoBot] Playback: ${frames.length} frames, ${srcRate}Hz, ${srcChannels}ch`);
+      const source = new AudioSource(srcRate, srcChannels);
       const localTrack = LocalAudioTrack.createAudioTrack('echo-playback', source);
       const pubOptions = new TrackPublishOptions({ source: TrackSource.SOURCE_MICROPHONE });
       const publication = await room.localParticipant!.publishTrack(localTrack, pubOptions);

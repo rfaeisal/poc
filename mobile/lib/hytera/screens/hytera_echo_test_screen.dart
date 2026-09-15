@@ -5,10 +5,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/talk_timer.dart';
 import '../../features/echo_test/providers/echo_test_provider.dart';
+import '../../features/ptt/providers/ptt_provider.dart';
 import '../services/hardware_key_service.dart';
 
 class HyteraEchoTestScreen extends ConsumerStatefulWidget {
   const HyteraEchoTestScreen({super.key});
+
+  static bool isActive = false;
 
   @override
   ConsumerState<HyteraEchoTestScreen> createState() =>
@@ -24,7 +27,11 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
   void initState() {
     super.initState();
     _keyNotifier = ref.read(hardwareKeyProvider.notifier);
-    Future.microtask(() => ref.read(echoTestProvider.notifier).start());
+    HyteraEchoTestScreen.isActive = true;
+    Future.microtask(() async {
+      await ref.read(livekitServiceProvider).disconnect();
+      ref.read(echoTestProvider.notifier).start();
+    });
     HardwareKeyboard.instance.addHandler(_handleBackKey);
     _overridePttCallbacks();
   }
@@ -42,6 +49,7 @@ class _HyteraEchoTestScreenState extends ConsumerState<HyteraEchoTestScreen> {
 
   @override
   void dispose() {
+    HyteraEchoTestScreen.isActive = false;
     _keyNotifier.onPttDown = _savedPttDown;
     _keyNotifier.onPttUp = _savedPttUp;
     HardwareKeyboard.instance.removeHandler(_handleBackKey);

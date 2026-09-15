@@ -77,7 +77,7 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
 
   Future<void> _autoJoin() async {
     final ptt = ref.read(pttProvider);
-    if (ptt.channelName != null) return;
+    if (ptt.channelName != null && ptt.isConnected) return;
 
     setState(() => _connecting = true);
     try {

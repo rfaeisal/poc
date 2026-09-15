@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/echo_test/providers/echo_test_provider.dart';
 import '../../features/ptt/providers/ptt_provider.dart';
 import '../services/hardware_key_service.dart';
+import 'hytera_echo_test_screen.dart';
 import '../services/kiosk_service.dart';
 import '../widgets/hytera_navbar.dart';
 
@@ -44,11 +46,21 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
 
   void _setupNativePttChannel() {
     _pttNativeChannel.setMethodCallHandler((call) async {
+      final onEchoTest = HyteraEchoTestScreen.isActive;
+
       if (call.method == 'pttDown') {
-        if (_currentIndex != 0) _onTabTap(0);
-        ref.read(pttProvider.notifier).startTransmit();
+        if (onEchoTest) {
+          ref.read(echoTestProvider.notifier).startTransmit();
+        } else {
+          if (_currentIndex != 0) _onTabTap(0);
+          ref.read(pttProvider.notifier).startTransmit();
+        }
       } else if (call.method == 'pttUp') {
-        ref.read(pttProvider.notifier).stopTransmit();
+        if (onEchoTest) {
+          ref.read(echoTestProvider.notifier).stopTransmit();
+        } else {
+          ref.read(pttProvider.notifier).stopTransmit();
+        }
       }
     });
   }

@@ -124,14 +124,12 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
     _roomListener!
       ..on<TrackSubscribedEvent>((event) {
         if (event.track is AudioTrack) {
-          // Bot echoing back — route audio to speaker
           try {
             _kioskChannel.invokeMethod('ensureAudioOutput');
           } catch (_) {}
 
           _playbackStart = DateTime.now();
 
-          // Measure latency: time from stop TX to bot echo arriving
           if (_stopTransmitTimestamp != null) {
             final now = DateTime.now().millisecondsSinceEpoch;
             final latency = now - _stopTransmitTimestamp!;
