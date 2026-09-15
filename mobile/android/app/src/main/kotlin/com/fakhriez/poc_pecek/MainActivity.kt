@@ -52,6 +52,23 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        when (applicationContext.packageName) {
+            "com.fakhriez.poc_ksun" -> {
+                pttKeyCode = 261
+                @Suppress("DEPRECATION")
+                window.decorView.systemUiVisibility = (
+                    android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                )
+            }
+            "com.fakhriez.poc_ptx" -> pttKeyCode = 293
+        }
+        Log.w("PttNative", "flavor=${applicationContext.packageName} pttKeyCode=$pttKeyCode")
+
         pttChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.fakhriez.poc_ptx/ptt_native")
         pttChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
@@ -125,6 +142,12 @@ class MainActivity : FlutterActivity() {
                     }
                     "openAccessibilitySettings" -> {
                         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        })
+                        result.success(true)
+                    }
+                    "openAndroidSettings" -> {
+                        startActivity(Intent(Settings.ACTION_SETTINGS).apply {
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         })
                         result.success(true)
@@ -347,6 +370,8 @@ class MainActivity : FlutterActivity() {
         val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val maxMedia = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         am.setStreamVolume(AudioManager.STREAM_MUSIC, maxMedia, 0)
+        val maxVoice = am.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL)
+        am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, maxVoice, 0)
         am.isSpeakerphoneOn = true
     }
 
@@ -408,6 +433,7 @@ class MainActivity : FlutterActivity() {
                 Log.w("PttNative", "PTT UP via native, invoking Flutter")
                 pttChannel?.invokeMethod("pttUp", null)
             }
+            return true
         }
 
         keyEventSink?.success(

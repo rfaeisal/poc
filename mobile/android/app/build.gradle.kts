@@ -25,7 +25,7 @@ android {
 
     defaultConfig {
         applicationId = "com.fakhriez.poc_pecek"
-        minSdk = 24
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -44,6 +44,13 @@ android {
             applicationId = "com.fakhriez.poc_ptx"
             resValue("string", "app_name", "POC-SMART")
             minSdk = 31
+        }
+        create("ksun") {
+            dimension = "app"
+            applicationId = "com.fakhriez.poc_ksun"
+            resValue("string", "app_name", "POC-SMART")
+            minSdk = (project.property("ksun.minSdk") as String).toInt()
+            proguardFile("proguard-ksun.pro")
         }
     }
 
@@ -84,3 +91,30 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+// Force older AndroidX core for KSUN API 22 compat
+configurations.all {
+    resolutionStrategy {
+        force("androidx.core:core:1.12.0")
+        force("androidx.core:core-ktx:1.12.0")
+    }
+}
+
+// For KSUN: force webrtc-sdk 137 which supports API 21
+// (144 uses __register_atfork and other API 23+ symbols)
+afterEvaluate {
+    configurations.matching { it.name.lowercase().contains("ksun") }.all {
+        resolutionStrategy {
+            force("io.github.webrtc-sdk:android:137.7151.04")
+        }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    allTasks.filter { it.name.contains("Ksun") && it.name.endsWith("MinSdkCheck") }.forEach {
+        it.enabled = false
+    }
+}
+
+
+

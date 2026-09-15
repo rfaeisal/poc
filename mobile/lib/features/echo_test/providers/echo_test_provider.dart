@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:livekit_client/livekit_client.dart';
-import 'package:permission_handler/permission_handler.dart';
-
 import '../../../config/app_config.dart';
+import '../../../core/services/permission_service.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -80,8 +79,8 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
     );
 
     try {
-      final micStatus = await Permission.microphone.request();
-      if (!micStatus.isGranted) {
+      final micGranted = await PermissionService.requestMicrophone();
+      if (!micGranted) {
         state = state.copyWith(
           status: EchoTestStatus.error,
           error: 'Izin mikrofon diperlukan untuk echo test',
@@ -225,6 +224,8 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
   }
 
   Future<void> stop() async {
+    state = const EchoTestState();
+
     _roomListener?.dispose();
     _roomListener = null;
 
@@ -248,8 +249,6 @@ class EchoTestNotifier extends StateNotifier<EchoTestState> {
     try {
       await _apiClient.dio.post(ApiEndpoints.echoStop, data: {});
     } catch (_) {}
-
-    state = const EchoTestState();
   }
 
   @override

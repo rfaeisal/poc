@@ -92,6 +92,7 @@ class PttNotifier extends StateNotifier<PttState> {
   StreamSubscription<MqttMessageEvent>? _mqttPttSub;
   String? _myUserId;
   String? _myCallsign;
+  bool _startingTransmit = false;
 
   PttNotifier({
     required LiveKitService livekit,
@@ -217,7 +218,8 @@ class PttNotifier extends StateNotifier<PttState> {
   }
 
   Future<void> startTransmit() async {
-    if (state.isBusy || state.isTransmitting || !state.isConnected) return;
+    if (state.isBusy || state.isTransmitting || !state.isConnected || _startingTransmit) return;
+    _startingTransmit = true;
 
     await _livekit.startTransmit();
     state = state.copyWith(isTransmitting: true);
@@ -231,6 +233,8 @@ class PttNotifier extends StateNotifier<PttState> {
       });
     }
 
+    _startingTransmit = false;
+
     _timeoutTimer?.cancel();
     _timeoutTimer = Timer(AppConfig.pttTimeout, () {
       stopTransmit();
@@ -238,6 +242,7 @@ class PttNotifier extends StateNotifier<PttState> {
   }
 
   Future<void> stopTransmit() async {
+    _startingTransmit = false;
     _timeoutTimer?.cancel();
     await _livekit.stopTransmit();
 

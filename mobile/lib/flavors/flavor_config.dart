@@ -1,4 +1,4 @@
-enum AppFlavor { pocPecek, hytera }
+enum AppFlavor { pocPecek, hytera, ksun }
 
 class FlavorConfig {
   static const String _flavorName = String.fromEnvironment(
@@ -10,6 +10,8 @@ class FlavorConfig {
     switch (_flavorName) {
       case 'hytera':
         return AppFlavor.hytera;
+      case 'ksun':
+        return AppFlavor.ksun;
       default:
         return AppFlavor.pocPecek;
     }
@@ -17,6 +19,7 @@ class FlavorConfig {
 
   static bool get isHytera => current == AppFlavor.hytera;
   static bool get isPocPecek => current == AppFlavor.pocPecek;
+  static bool get isKsun => current == AppFlavor.ksun;
 
-  static String get appName => isHytera ? 'POC-SMART' : 'POC-Pecek';
+  static String get appName => 'POC-SMART';
 }

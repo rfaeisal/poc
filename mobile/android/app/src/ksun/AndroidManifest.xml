@@ -1,0 +1,51 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-sdk tools:overrideLibrary="
+        androidx.core,
+        androidx.core.ktx,
+        com.baseflow.geolocator,
+        com.llfbandit.record,
+        io.flutter.plugins.sharedpreferences,
+        io.flutter.plugins.urllauncher,
+        com.google.android.gms.base,
+        com.google.android.gms.cloudmessaging,
+        com.google.android.gms.common,
+        com.google.android.gms.measurement.api,
+        com.google.android.gms.measurement.sdk,
+        com.google.android.gms.measurement.sdk.api,
+        com.google.android.gms.measurement_base,
+        com.google.android.gms.tasks,
+        com.google.firebase.firebase_analytics,
+        com.google.firebase.measurement,
+        com.google.firebase.measurement_impl,
+        com.google.firebase.messaging,
+        io.flutter.plugins.firebase.analytics,
+        io.flutter.plugins.firebase.core,
+        io.flutter.plugins.firebase.crashlytics,
+        io.flutter.plugins.firebase.messaging" />
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+
+    <application>
+        <activity
+            android:name=".MainActivity"
+            tools:node="merge">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.HOME"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

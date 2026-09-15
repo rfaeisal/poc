@@ -1,17 +1,11 @@
-import 'dart:io';
-
-import 'package:permission_handler/permission_handler.dart';
+import 'permission_service.dart';
 
 class BatteryOptimizationService {
   static Future<bool> isIgnoringBatteryOptimizations() async {
-    if (!Platform.isAndroid) return true;
-    final status = await Permission.ignoreBatteryOptimizations.status;
-    return status.isGranted;
+    return PermissionService.isIgnoringBatteryOptimizations();
   }
 
   static Future<bool> requestIgnoreBatteryOptimizations() async {
-    if (!Platform.isAndroid) return true;
-    final status = await Permission.ignoreBatteryOptimizations.request();
-    return status.isGranted;
+    return PermissionService.requestIgnoreBatteryOptimizations();
   }
 }
