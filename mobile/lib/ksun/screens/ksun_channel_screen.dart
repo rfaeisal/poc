@@ -10,7 +10,6 @@ import '../../features/channels/providers/channels_provider.dart';
 import '../../features/map/providers/location_provider.dart';
 import '../../features/ptt/providers/ptt_provider.dart';
 import '../../features/settings/providers/settings_provider.dart';
-import '../services/ksun_kiosk_service.dart';
 import '../widgets/ksun_audio_spectrograph.dart';
 import '../widgets/ksun_channel_frame.dart';
 import '../widgets/ksun_speaker_box.dart';
@@ -82,7 +81,6 @@ class _KsunChannelScreenState extends ConsumerState<KsunChannelScreen> {
         );
 
     PttForegroundService.start(channelName);
-    KsunKioskService.keepScreenOn();
 
     final settings = ref.read(settingsProvider);
     if (settings.locationSharing) {

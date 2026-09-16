@@ -113,8 +113,6 @@ class _KsunMainScreenState extends ConsumerState<KsunMainScreen>
         if (didPop) return;
         if (_currentIndex != 0) {
           _onTabTap(0);
-        } else {
-          KsunKioskService.exitApp();
         }
       },
       child: Scaffold(
