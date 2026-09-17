@@ -85,13 +85,20 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
 
   Future<void> _initKiosk() async {
     await KioskService.enableKiosk();
-    await KioskService.pinApp();
+    await SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.top],
+    );
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       KioskService.enableKiosk();
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top],
+      );
     }
   }
 
@@ -147,7 +154,9 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0B0F1A),
-        body: FocusScope(
+        body: SafeArea(
+          bottom: false,
+          child: FocusScope(
           autofocus: true,
           onKeyEvent: _handleKeyEvent,
           child: Column(
@@ -159,6 +168,7 @@ class _HyteraMainScreenState extends ConsumerState<HyteraMainScreen>
               ),
             ],
           ),
+        ),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../core/services/foreground_service.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/settings/providers/settings_provider.dart';
 import '../services/hardware_key_service.dart';
@@ -33,6 +34,25 @@ class HyteraPengaturanScreen extends ConsumerWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
+        ),
+
+        // APLIKASI
+        _SectionHeader(title: 'APLIKASI'),
+        _FocusableSettingItem(
+          icon: Icons.visibility_off,
+          name: 'Sembunyikan',
+          description: 'Minimize, tetap dengar RX di background',
+          onTap: () async {
+            await PttForegroundService.updateNotification('Aktif di background');
+            await KioskService.hideApp();
+          },
+        ),
+        _FocusableSettingItem(
+          icon: Icons.exit_to_app,
+          name: 'Keluar Aplikasi',
+          description: 'Tutup aplikasi sepenuhnya',
+          isDestructive: true,
+          onTap: () => _confirmExit(context),
         ),
 
         // DIAGNOSTIK
@@ -175,16 +195,6 @@ class HyteraPengaturanScreen extends ConsumerWidget {
             await ref.read(authProvider.notifier).logout();
             if (context.mounted) context.go('/login');
           },
-        ),
-
-        const SizedBox(height: 8),
-        _SectionHeader(title: 'APLIKASI'),
-        _FocusableSettingItem(
-          icon: Icons.exit_to_app,
-          name: 'Keluar Aplikasi',
-          description: 'Tutup aplikasi sepenuhnya',
-          isDestructive: true,
-          onTap: () => _confirmExit(context),
         ),
 
         const SizedBox(height: 12),

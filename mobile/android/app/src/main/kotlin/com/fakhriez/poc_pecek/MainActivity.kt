@@ -10,7 +10,9 @@ import android.content.IntentFilter
 import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
+import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
@@ -45,6 +47,8 @@ class MainActivity : FlutterActivity() {
     private var pttChannel: MethodChannel? = null
     private var pttKeyCode: Int = 142
 
+    private var hideTimestamp: Long = 0
+    private var audioFocusRequest: AudioFocusRequest? = null
     private var audioRecord: AudioRecord? = null
     private var recordingThread: Thread? = null
     @Volatile private var isRecording = false
@@ -156,6 +160,11 @@ class MainActivity : FlutterActivity() {
                         })
                         result.success(true)
                     }
+                    "hideApp" -> {
+                        hideTimestamp = System.currentTimeMillis()
+                        moveTaskToBack(true)
+                        result.success(true)
+                    }
                     "isKioskEnabled" -> {
                         result.success(kioskEnabled)
                     }
@@ -257,6 +266,7 @@ class MainActivity : FlutterActivity() {
 
     private fun enableKioskMode() {
         kioskEnabled = true
+        if (applicationContext.packageName == "com.fakhriez.poc_ptx") return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.let { controller ->
                 controller.hide(WindowInsets.Type.systemBars())
@@ -288,6 +298,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun bringAppToFront() {
+        hideTimestamp = 0
         val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         am.moveTaskToFront(taskId, ActivityManager.MOVE_TASK_WITH_HOME)
     }
@@ -394,21 +405,53 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun resetAudioForTransmit() {
+        abandonAudioFocusPriority()
         val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         am.mode = AudioManager.MODE_NORMAL
         am.isSpeakerphoneOn = false
     }
 
     private fun ensureAudioOutput() {
+        requestAudioFocusPriority()
         val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         am.mode = AudioManager.MODE_IN_COMMUNICATION
         am.isSpeakerphoneOn = true
-        // Sync VOICE_CALL volume to match MUSIC volume ratio set by user
         val musicVol = am.getStreamVolume(AudioManager.STREAM_MUSIC)
         val musicMax = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         val voiceMax = am.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL)
         val ratio = if (musicMax > 0) musicVol.toFloat() / musicMax else 0.5f
         am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, (voiceMax * ratio).toInt().coerceAtLeast(1), 0)
+    }
+
+    private fun requestAudioFocusPriority() {
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build()
+                )
+                .setOnAudioFocusChangeListener {}
+                .build()
+            audioFocusRequest = request
+            am.requestAudioFocus(request)
+        } else {
+            @Suppress("DEPRECATION")
+            am.requestAudioFocus({}, AudioManager.STREAM_VOICE_CALL, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)
+        }
+    }
+
+    private fun abandonAudioFocusPriority() {
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest?.let { am.abandonAudioFocusRequest(it) }
+            audioFocusRequest = null
+        } else {
+            @Suppress("DEPRECATION")
+            am.abandonAudioFocus(null)
+        }
     }
 
     private fun pinApp() {
@@ -421,6 +464,17 @@ class MainActivity : FlutterActivity() {
         try {
             stopLockTask()
         } catch (_: Exception) {}
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (hideTimestamp > 0 &&
+            intent.hasCategory(Intent.CATEGORY_LAUNCHER) &&
+            System.currentTimeMillis() - hideTimestamp < 10_000) {
+            moveTaskToBack(true)
+            return
+        }
+        hideTimestamp = 0
     }
 
     @Deprecated("Deprecated in API 33+")

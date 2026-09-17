@@ -35,6 +35,12 @@ class KioskService {
     } on PlatformException catch (_) {}
   }
 
+  static Future<void> hideApp() async {
+    try {
+      await _channel.invokeMethod('hideApp');
+    } on PlatformException catch (_) {}
+  }
+
   static Future<void> bringToFront() async {
     try {
       await _channel.invokeMethod('bringToFront');

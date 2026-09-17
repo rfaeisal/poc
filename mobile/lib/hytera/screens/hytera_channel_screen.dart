@@ -16,7 +16,6 @@ import '../widgets/hytera_audio_spectrograph.dart';
 import '../widgets/hytera_channel_frame.dart';
 import '../widgets/hytera_ptt_button.dart';
 import '../widgets/hytera_speaker_box.dart';
-import '../widgets/hytera_status_bar.dart';
 import '../widgets/hytera_toggle_bar.dart';
 
 class HyteraChannelScreen extends ConsumerStatefulWidget {
@@ -185,9 +184,6 @@ class _HyteraChannelScreenState extends ConsumerState<HyteraChannelScreen> {
 
     return Column(
       children: [
-        HyteraStatusBar(
-          isMqttConnected: ref.watch(mqttConnectedProvider).valueOrNull ?? false,
-        ),
         const HyteraSpeakerBox(),
         HyteraAudioSpectrograph(
           isTransmitting: isTransmitting,
